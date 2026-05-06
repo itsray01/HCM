@@ -1,0 +1,994 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Babys HCM Trip</name>
+    <description/>
+    <Style id="icon-1502-FBC02D-labelson-nodesc">
+      <IconStyle>
+        <color>ff2dc0fb</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <Style id="icon-1502-FFD600-labelson-nodesc">
+      <IconStyle>
+        <color>ff00d6ff</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <Style id="icon-1517-880E4F-nodesc-normal">
+      <IconStyle>
+        <color>ff4f0e88</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <Style id="icon-1517-880E4F-nodesc-highlight">
+      <IconStyle>
+        <color>ff4f0e88</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <StyleMap id="icon-1517-880E4F-nodesc">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1517-880E4F-nodesc-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1517-880E4F-nodesc-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1517-A52714-nodesc-normal">
+      <IconStyle>
+        <color>ff1427a5</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <Style id="icon-1517-A52714-nodesc-highlight">
+      <IconStyle>
+        <color>ff1427a5</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <StyleMap id="icon-1517-A52714-nodesc">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1517-A52714-nodesc-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1517-A52714-nodesc-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1577-880E4F-normal">
+      <IconStyle>
+        <color>ff4f0e88</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+    </Style>
+    <Style id="icon-1577-880E4F-highlight">
+      <IconStyle>
+        <color>ff4f0e88</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+    </Style>
+    <StyleMap id="icon-1577-880E4F">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1577-880E4F-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1577-880E4F-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1577-880E4F-nodesc-normal">
+      <IconStyle>
+        <color>ff4f0e88</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <Style id="icon-1577-880E4F-nodesc-highlight">
+      <IconStyle>
+        <color>ff4f0e88</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <StyleMap id="icon-1577-880E4F-nodesc">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1577-880E4F-nodesc-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1577-880E4F-nodesc-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1577-A52714-normal">
+      <IconStyle>
+        <color>ff1427a5</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+    </Style>
+    <Style id="icon-1577-A52714-highlight">
+      <IconStyle>
+        <color>ff1427a5</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+    </Style>
+    <StyleMap id="icon-1577-A52714">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1577-A52714-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1577-A52714-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1577-A52714-nodesc-normal">
+      <IconStyle>
+        <color>ff1427a5</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <Style id="icon-1577-A52714-nodesc-highlight">
+      <IconStyle>
+        <color>ff1427a5</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <StyleMap id="icon-1577-A52714-nodesc">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1577-A52714-nodesc-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1577-A52714-nodesc-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1603-FF5252-nodesc-normal">
+      <IconStyle>
+        <color>ff5252ff</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <Style id="icon-1603-FF5252-nodesc-highlight">
+      <IconStyle>
+        <color>ff5252ff</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <StyleMap id="icon-1603-FF5252-nodesc">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1603-FF5252-nodesc-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1603-FF5252-nodesc-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1899-0288D1-nodesc-normal">
+      <IconStyle>
+        <color>ffd18802</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+        <hotSpot x="32" xunits="pixels" y="64" yunits="insetPixels"/>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <Style id="icon-1899-0288D1-nodesc-highlight">
+      <IconStyle>
+        <color>ffd18802</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+        <hotSpot x="32" xunits="pixels" y="64" yunits="insetPixels"/>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <StyleMap id="icon-1899-0288D1-nodesc">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1899-0288D1-nodesc-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1899-0288D1-nodesc-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Folder>
+      <name>Clothes</name>
+      <Placemark>
+        <name>objoff</name>
+        <styleUrl>#icon-1502-FBC02D-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7348209,10.8116496,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>22 Đặng Thị Nhu</name>
+        <styleUrl>#icon-1502-FBC02D-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6972224,10.7695666,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Bunnyhillconcept</name>
+        <styleUrl>#icon-1502-FBC02D-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.678111,10.7887309,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>38 Đặng Thị Nhu</name>
+        <styleUrl>#icon-1502-FBC02D-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6971012,10.7693334,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>The New Playground</name>
+        <styleUrl>#icon-1502-FBC02D-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.701092,10.7782185,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>HUONG Boutique</name>
+        <styleUrl>#icon-1502-FBC02D-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6852896,10.7709363,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>COCOSIN STORE</name>
+        <styleUrl>#icon-1502-FBC02D-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6851803,10.7708285,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Manné Code</name>
+        <styleUrl>#icon-1502-FBC02D-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6853194,10.7710223,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>La Vierge</name>
+        <styleUrl>#icon-1502-FFD600-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6859882,10.7739121,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>DATT Official</name>
+        <styleUrl>#icon-1502-FBC02D-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6971934,10.7691157,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>COMPOUND GARMENT</name>
+        <styleUrl>#icon-1502-FBC02D-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7012332,10.7689693,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Jirene Studio</name>
+        <styleUrl>#icon-1502-FBC02D-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6915987,10.7836465,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Kisserine House</name>
+        <styleUrl>#icon-1502-FBC02D-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6929711,10.7842992,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>HUELLEYROSE</name>
+        <styleUrl>#icon-1502-FBC02D-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.691792,10.7881945,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Rue Miche Boutique</name>
+        <styleUrl>#icon-1502-FBC02D-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6980123,10.7842217,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Mozaic Space</name>
+        <styleUrl>#icon-1502-FBC02D-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.679335,10.7855198,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Clothing Apartment</name>
+        <styleUrl>#icon-1502-FBC02D-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7024998,10.7735998,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Whose Studio</name>
+        <styleUrl>#icon-1502-FBC02D-labelson-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6773361,10.7891196,0
+          </coordinates>
+        </Point>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>Airbnb</name>
+      <Placemark>
+        <name>330/15B Đ. Phan Đình Phùng</name>
+        <styleUrl>#icon-1603-FF5252-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6810827,10.7986267,0
+          </coordinates>
+        </Point>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>Cafe/Food</name>
+      <Placemark>
+        <name>Crab Vermicelli</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6978512,10.7901919,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>134 Hoàng Diệu</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.703481,10.7633882,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name><![CDATA[Pizza 4P's Hai Ba Trung]]></name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6970677,10.783116,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Oasis Cafe</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6710981,10.7927268,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Bánh Canh Cua 14 ️</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.68017,10.759495,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Mặn Mòi, Tao Đàn - Homey Authentic Vietnamese Cuisine</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6920178,10.7786789,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Phở Miến gà Kỳ Đồng</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6819786,10.7839022,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name><![CDATA[The 350F Dessert & More]]></name>
+        <description>Tiramisu</description>
+        <styleUrl>#icon-1577-880E4F</styleUrl>
+        <Point>
+          <coordinates>
+            106.6867297,10.7969331,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>ME Cafe (Insane Aesthetic)</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6835755,10.8288537,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Mille Mille - Boutique Store - Trần Cao Vân</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6962605,10.7836415,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>GEM Cafe</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7023754,10.7901358,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>The Cafe Apartment | Photobooth</name>
+        <description>Photobooth is opposite</description>
+        <styleUrl>#icon-1577-A52714</styleUrl>
+        <Point>
+          <coordinates>
+            106.7041674,10.7740586,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Photobooth (MonoBooth)</name>
+        <styleUrl>#icon-1577-A52714-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7023098,10.7736133,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Chạng Vạng Rooftop</name>
+        <styleUrl>#icon-1517-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7250691,10.7880474,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>linh.café</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.701246,10.768389,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Phở Việt Nam</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6961339,10.771386,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Broken Rice?</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7034802,10.7633879,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Soumaki - Your Healthy Food Soulmate - Lý Tự Trọng</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.700107,10.7771971,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Bánh Mì Huynh Hoa - Lê Thị Riêng</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6923968,10.7715226,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Ốc Đào</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6846346,10.765238,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Bún Thịt Nướng Chị Tuyền</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.693591,10.761804,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Bò Né Thanh Tuyền</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7041502,10.7655807,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Sizzling Steak</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6988593,10.7685479,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name><![CDATA[Sol Kitchen & Bar]]></name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6971367,10.774107,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Quince Saigon</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6992167,10.766199,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Anan Saigon</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.702893,10.771729,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Apero Pasta</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7372114,10.8032426,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name><![CDATA[Én’s Kitchen- Italian Cuisine & more]]></name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6997327,10.7913795,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Moa Moa Pasta Club</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7050364,10.7733236,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Fellini Pasta</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7371925,10.8044799,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>XUONG MI PASTA</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.668427,10.7908449,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Antico Fornaio - Pasta</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7023643,10.7763495,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Amano Pizza - Lê Thánh Tôn</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6966866,10.7730146,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>ThisThat Bakery Cafe</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7398747,10.8060696,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Garden Kisses</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7289735,10.80414,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>I HATE MONDAY DINING</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7353767,10.802817,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>ngâm CAFE</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6861926,10.7864405,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Ngọt Ngào</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6901199,10.7909613,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>nhà tạo cafe</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6945507,10.7958848,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name><![CDATA[Nobi bakes & teas - Tiệm bánh nhà Nobi chi nhánh 2]]></name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.675348,10.7997289,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Dalaland Coffee</name>
+        <styleUrl>#icon-1577-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7406814,10.8044692,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name><![CDATA[Zion Sky Lounge & Dining]]></name>
+        <styleUrl>#icon-1517-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7021213,10.7705736,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name><![CDATA[Chill Skybar & Dining]]></name>
+        <styleUrl>#icon-1517-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6943777,10.7705648,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Not A Bar</name>
+        <styleUrl>#icon-1517-880E4F-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7046106,10.7727302,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Social Club Rooftop Bar</name>
+        <styleUrl>#icon-1517-A52714-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6973331,10.7824226,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name><![CDATA[Banana Mama Rooftop Bar & Kitchen Saigon]]></name>
+        <styleUrl>#icon-1517-A52714-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6905357,10.7649165,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name><![CDATA[Papaya Papa – Rooftop Restaurant, Bar & Club Ho Chi Minh City]]></name>
+        <styleUrl>#icon-1577-A52714-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6974387,10.7831204,0
+          </coordinates>
+        </Point>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>for da funz</name>
+      <Placemark>
+        <name>Nyan Tei - Cat cafe</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6205419,10.7969999,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>HAEU Beauty Salon</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.7341594,10.8044003,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>KUDOCHI Onsen</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.704737,10.7771119,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Family Photoshoot</name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.678852,10.7958556,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name><![CDATA[Rose Spa DAKAO - Herbal Hair Wash - Body & Foot MASSAGE for Men and Women]]></name>
+        <styleUrl>#icon-1899-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            106.6949822,10.7927638,0
+          </coordinates>
+        </Point>
+      </Placemark>
+    </Folder>
+  </Document>
+</kml>

@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply m-0 min-h-screen font-sans antialiased;
+    background-color: #F9F6F1;
+    color: #2D2417;
+  }
+}
