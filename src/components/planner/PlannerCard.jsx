@@ -28,7 +28,7 @@ import { CATEGORY_COLORS, googleMapsUrl } from '../../utils/kmlParser.js';
 import { getLocationById } from '../../data/locations.js';
 import { PHOTO_OVERRIDES, FORCE_REFETCH } from '../../utils/photoOverrides.js';
 import { fetchLocationPhoto } from '../../utils/fetchLocationPhoto.js';
-import { TimePopover, DurationPopover } from './TimePicker.jsx';
+import { TimePopover } from './TimePicker.jsx';
 
 const CATEGORY_ICONS = {
   clothes: ShoppingBag,
@@ -194,7 +194,7 @@ export default function PlannerCard({
 
   const { photoUrl, loading: photoLoading } = useAutoPhoto(stop, location);
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [editingPicker, setEditingPicker] = useState(null); // null | 'time' | 'duration'
+  const [editingPicker, setEditingPicker] = useState(null); // null | 'time'
   const [pickerAnchor, setPickerAnchor] = useState(null);
   const notesRef = useRef(null);
 
@@ -331,30 +331,6 @@ export default function PlannerCard({
                 {stop.travel}
                 {stop.distance && ` · ${stop.distance}`}
               </span>
-            )}
-            {stop.type === 'place' && (
-              stop.duration ? (
-                <button
-                  type="button"
-                  onClick={(e) => openPicker('duration', e)}
-                  className="rounded-full px-1.5 py-0.5 text-[11px] text-ink/40 transition hover:bg-terracotta/10 hover:text-terracotta"
-                  title="Edit duration"
-                >
-                  {stop.duration}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={(e) => openPicker('duration', e)}
-                  className="rounded-full border border-dashed border-ink/15 px-1.5 py-0.5 text-[11px] text-ink/35 transition hover:border-terracotta/40 hover:text-terracotta"
-                  title="Set duration"
-                >
-                  + duration
-                </button>
-              )
-            )}
-            {stop.type !== 'place' && stop.duration && (
-              <span className="text-[11px] text-ink/40">{stop.duration}</span>
             )}
           </div>
         </div>
@@ -546,17 +522,6 @@ export default function PlannerCard({
         onCancel={closePicker}
         onCommit={(v) => {
           onUpdateField({ time: v });
-          closePicker();
-        }}
-      />
-    )}
-    {editingPicker === 'duration' && (
-      <DurationPopover
-        value={stop.duration}
-        anchorRect={pickerAnchor}
-        onCancel={closePicker}
-        onCommit={(v) => {
-          onUpdateField({ duration: v });
           closePicker();
         }}
       />

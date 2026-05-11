@@ -281,7 +281,7 @@ export default function PlannerMap({ activeDay, focusedLocationId, categoryFilte
               </div>
               {activeMarker.stop.time && (
                 <div style={{ marginTop: 4, fontSize: 12, color: '#888' }}>
-                  {activeMarker.stop.time}{activeMarker.stop.duration ? ` · ${activeMarker.stop.duration}` : ''}
+                  {activeMarker.stop.time}
                 </div>
               )}
               <a
