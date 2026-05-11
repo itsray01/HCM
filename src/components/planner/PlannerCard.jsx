@@ -20,6 +20,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  EyeOff,
   Pencil,
   Heart,
   Car,
@@ -31,6 +32,7 @@ import { getLocationById } from '../../data/locations.js';
 import { PLACE_IDS } from '../../data/placeIds.js';
 import { PHOTO_OVERRIDES, FORCE_REFETCH } from '../../utils/photoOverrides.js';
 import { fetchLocationPhoto, fetchLocationPhotos } from '../../utils/fetchLocationPhoto.js';
+import { usePhotoBlocklist, refFromPhotoUrl } from '../../hooks/usePhotoBlocklist.js';
 import { TimePopover } from './TimePicker.jsx';
 
 const CATEGORY_ICONS = {
@@ -169,15 +171,50 @@ function useAutoPhoto(stop, location) {
     : false;
 
   const fromLegacy = isStale ? null : storedUrl;
-  const persisted  = override ?? autoUrl ?? fromLegacy;
+  const rawPersisted = override ?? autoUrl ?? fromLegacy;
   const lat = location?.lat ?? stop.lat ?? null;
   const lng = location?.lng ?? stop.lng ?? null;
 
+  // If the user has hidden the chosen photo for this place, swap to the first
+  // un-hidden alternative from Place Details. Overrides are exempt — they're
+  // manually set and should win.
+  const { isHidden, blocklist } = usePhotoBlocklist();
+  const [altUrl, setAltUrl] = useState(null);
+  const altUrlFor = useRef(null);
+
   useEffect(() => {
-    if (persisted) return;
+    setAltUrl(null);                 // reset when stop or placeId changes
+    altUrlFor.current = null;
+  }, [stop.label, placeId]);
+
+  const currentRef = refFromPhotoUrl(rawPersisted);
+  const persistedIsBlocked =
+    !override && placeId && currentRef && isHidden(placeId, currentRef);
+
+  useEffect(() => {
+    if (!persistedIsBlocked) return;
+    const key = `${placeId}|${currentRef}`;
+    if (altUrlFor.current === key) return;
+    altUrlFor.current = key;
+
+    let cancelled = false;
+    fetchLocationPhotos(placeId, stop.label, lat, lng).then((urls) => {
+      if (cancelled) return;
+      const pick = urls.find((u) => {
+        const r = refFromPhotoUrl(u);
+        return r && !isHidden(placeId, r);
+      });
+      if (pick) setAltUrl(pick);
+    });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [persistedIsBlocked, blocklist, placeId, currentRef]);
+
+  const persisted = persistedIsBlocked ? (altUrl ?? null) : rawPersisted;
+
+  useEffect(() => {
+    if (rawPersisted && !persistedIsBlocked) return; // already have a good photo
     const name = stop.label;
-    // Re-fetch when label OR placeId changes (adding a placeId should bust
-    // the previous wrong photo).
     const fetchKey = `${name}|${placeId ?? ''}`;
     if (!name || fetchedForRef.current === fetchKey) return;
     fetchedForRef.current = fetchKey;
@@ -713,11 +750,13 @@ function PhotoThumb({ photoUrl, loading, label, accent, icon: Icon, onOpen, onCo
 // images. When no placeId is available, falls back to the single firstSrc photo.
 
 function PhotoLightbox({ firstSrc, label, placeId, name, lat, lng, onClose }) {
-  const [photos, setPhotos] = useState([firstSrc]);
-  const [idx,    setIdx]    = useState(0);
-  const [loading, setLoading] = useState(!!placeId || !!name);
+  const { isHidden, hide } = usePhotoBlocklist();
 
-  // Fetch the canonical gallery (up to 5 photos) when opened.
+  // Source-of-truth list, before applying the hide-filter.
+  const [allPhotos, setAllPhotos] = useState([firstSrc]);
+  const [idx,       setIdx]       = useState(0);
+  const [loading,   setLoading]   = useState(!!placeId || !!name);
+
   useEffect(() => {
     let cancelled = false;
     if (!placeId && !name) { setLoading(false); return; }
@@ -725,17 +764,38 @@ function PhotoLightbox({ firstSrc, label, placeId, name, lat, lng, onClose }) {
       if (cancelled) return;
       setLoading(false);
       if (urls && urls.length > 0) {
-        // Keep the already-loaded firstSrc up front to avoid a visual swap.
         const rest = urls.filter((u) => u !== firstSrc);
-        setPhotos([firstSrc, ...rest].slice(0, 5));
+        setAllPhotos([firstSrc, ...rest].slice(0, 5));
       }
     });
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [placeId]);
 
-  const count = photos.length;
+  // Visible photos = full set minus user-hidden ones.
+  const photos = placeId
+    ? allPhotos.filter((u) => {
+        const r = refFromPhotoUrl(u);
+        return !r || !isHidden(placeId, r);
+      })
+    : allPhotos;
+
+  const count    = photos.length;
   const hasMulti = count > 1;
+
+  // Clamp idx if visible set shrinks (after hide).
+  useEffect(() => {
+    if (idx >= count && count > 0) setIdx(count - 1);
+  }, [count, idx]);
+
+  function handleHideCurrent() {
+    if (!placeId) return;
+    const url = photos[idx];
+    const ref = refFromPhotoUrl(url);
+    if (!ref) return;
+    hide(placeId, ref);
+    if (count <= 1) onClose();
+  }
 
   function go(delta) {
     setIdx((i) => (i + delta + count) % count);
@@ -765,21 +825,38 @@ function PhotoLightbox({ firstSrc, label, placeId, name, lat, lng, onClose }) {
     });
   }, [idx, photos, count, hasMulti]);
 
-  const current = photos[idx];
+  // After hiding the last visible photo we close the lightbox; until the
+  // close handler fires, render a safe fallback.
+  if (count === 0) return null;
+  const current = photos[Math.min(idx, count - 1)];
 
   return (
     <div
       className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/85 backdrop-blur-sm"
       onClick={onClose}
     >
-      <button
-        type="button"
-        onClick={onClose}
-        className="absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
-        aria-label="Close photo"
-      >
-        <X className="h-4 w-4" />
-      </button>
+      <div className="absolute right-3 top-3 z-20 flex items-center gap-2">
+        {placeId && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); handleHideCurrent(); }}
+            className="flex h-9 items-center gap-1.5 rounded-full bg-black/50 px-3 text-xs font-medium text-white backdrop-blur-sm transition hover:bg-rose-500/80"
+            aria-label="Hide this photo"
+            title="Hide this photo — wrong subject? Click to remove it from the gallery."
+          >
+            <EyeOff className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Hide photo</span>
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
+          aria-label="Close photo"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
 
       {hasMulti && (
         <>
