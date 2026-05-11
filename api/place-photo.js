@@ -57,15 +57,20 @@ function photoUrl(ref) {
   return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${ref}&key=${GOOGLE_KEY}`;
 }
 
-// 0. Canonical lookup via place_id — same data Wanderlog uses
+// 0. Canonical lookup via place_id — same data Wanderlog uses.
+//    Returns { url, urls } — `url` is the first photo, `urls` is up to 10.
 async function tryPlaceDetails(placeId) {
   const url =
     `https://maps.googleapis.com/maps/api/place/details/json` +
     `?place_id=${encodeURIComponent(placeId)}&fields=photos,name,place_id` +
     `&key=${GOOGLE_KEY}`;
-  const data = await fetch(url).then((r) => r.json());
-  const ref = data?.result?.photos?.[0]?.photo_reference;
-  return ref ? photoUrl(ref) : null;
+  const data  = await fetch(url).then((r) => r.json());
+  const refs  = (data?.result?.photos ?? [])
+    .map((p) => p.photo_reference)
+    .filter(Boolean);
+  if (!refs.length) return null;
+  const urls = refs.map(photoUrl);
+  return { url: urls[0], urls };
 }
 
 // 1. Stricter text search with POINT bias. Returns { url, placeId, distance } so
@@ -139,24 +144,43 @@ async function tryFoursquare(name, lat, lng) {
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
-  const { name, lat, lng, placeId, resolve } = req.query;
+  const { name, lat, lng, placeId, resolve, multi } = req.query;
+  const wantMulti = multi === '1';
 
   const latNum = lat ? parseFloat(lat) : null;
   const lngNum = lng ? parseFloat(lng) : null;
 
   try {
-    // 0. Canonical lookup — exact same data Wanderlog uses
-    if (placeId) {
-      const url = await tryPlaceDetails(placeId);
-      if (url) return res.json({ url, placeId, source: 'place_details' });
+    // Resolve a placeId first when we don't already have one, so multi-photo
+    // requests still work for stops we've never canonical-IDed.
+    let effectivePid = placeId || null;
+    if (!effectivePid && name) {
+      const fp = await tryFindPlace(name, latNum, lngNum);
+      if (fp?.placeId) effectivePid = fp.placeId;
+    }
+
+    // 0. Canonical lookup — Place Details. The ONLY path that returns multi.
+    if (effectivePid) {
+      const det = await tryPlaceDetails(effectivePid);
+      if (det) {
+        return res.json({
+          url:     det.url,
+          urls:    wantMulti ? det.urls.slice(0, 5) : undefined,
+          placeId: effectivePid,
+          source:  'place_details',
+        });
+      }
     }
 
     if (!name) return res.json({ url: null });
 
+    // Multi mode is strict — if we can't get a canonical placeId, don't fall
+    // back to fuzzy results (they might be wrong).
+    if (wantMulti) return res.json({ url: null, urls: [] });
+
     // 1. Strict text search with point bias
     const fp = await tryFindPlace(name, latNum, lngNum);
     if (fp) {
-      // Diagnostic mode: return the resolved placeId without committing to the photo
       if (resolve === '1') {
         return res.json({
           url: fp.url, placeId: fp.placeId, dist: fp.dist, source: 'findplace',

@@ -18,6 +18,8 @@ import {
   CircleSlash,
   Loader2,
   X,
+  ChevronLeft,
+  ChevronRight,
   Pencil,
   Heart,
   Car,
@@ -28,7 +30,7 @@ import { CATEGORY_COLORS, googleMapsUrl } from '../../utils/kmlParser.js';
 import { getLocationById } from '../../data/locations.js';
 import { PLACE_IDS } from '../../data/placeIds.js';
 import { PHOTO_OVERRIDES, FORCE_REFETCH } from '../../utils/photoOverrides.js';
-import { fetchLocationPhoto } from '../../utils/fetchLocationPhoto.js';
+import { fetchLocationPhoto, fetchLocationPhotos } from '../../utils/fetchLocationPhoto.js';
 import { TimePopover } from './TimePicker.jsx';
 
 const CATEGORY_ICONS = {
@@ -194,7 +196,7 @@ function useAutoPhoto(stop, location) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stop.label, placeId]);
 
-  return { photoUrl: persisted, loading: !persisted && loading };
+  return { photoUrl: persisted, loading: !persisted && loading, placeId };
 }
 
 export default function PlannerCard({
@@ -218,7 +220,7 @@ export default function PlannerCard({
     ? googleMapsUrl(location.lat, location.lng)
     : (stop.lat && stop.lng ? googleMapsUrl(stop.lat, stop.lng) : null);
 
-  const { photoUrl, loading: photoLoading } = useAutoPhoto(stop, location);
+  const { photoUrl, loading: photoLoading, placeId: placeIdForLightbox } = useAutoPhoto(stop, location);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [editingPicker, setEditingPicker] = useState(null); // null | 'time'
   const [pickerAnchor, setPickerAnchor] = useState(null);
@@ -534,8 +536,12 @@ export default function PlannerCard({
 
     {lightboxOpen && photoUrl && createPortal(
       <PhotoLightbox
-        src={photoUrl}
+        firstSrc={photoUrl}
         label={stop.label}
+        placeId={placeIdForLightbox}
+        name={stop.label}
+        lat={stop.lat ?? location?.lat ?? null}
+        lng={stop.lng ?? location?.lng ?? null}
         onClose={() => setLightboxOpen(false)}
       />,
       document.body
@@ -701,44 +707,148 @@ function PhotoThumb({ photoUrl, loading, label, accent, icon: Icon, onOpen, onCo
 }
 
 // ─── Full-screen lightbox ─────────────────────────────────────────────────────
+// Wanderlog-style: large hero photo, prev/next arrows, thumbnail strip below.
+// Multi-photo gallery is only shown when we have a canonical Google place_id
+// (or can resolve one strictly) — never fuzzy results, to avoid showing wrong
+// images. When no placeId is available, falls back to the single firstSrc photo.
 
-function PhotoLightbox({ src, label, onClose }) {
+function PhotoLightbox({ firstSrc, label, placeId, name, lat, lng, onClose }) {
+  const [photos, setPhotos] = useState([firstSrc]);
+  const [idx,    setIdx]    = useState(0);
+  const [loading, setLoading] = useState(!!placeId || !!name);
+
+  // Fetch the canonical gallery (up to 5 photos) when opened.
   useEffect(() => {
-    function onKey(e) { if (e.key === 'Escape') onClose(); }
+    let cancelled = false;
+    if (!placeId && !name) { setLoading(false); return; }
+    fetchLocationPhotos(placeId, name, lat, lng).then((urls) => {
+      if (cancelled) return;
+      setLoading(false);
+      if (urls && urls.length > 0) {
+        // Keep the already-loaded firstSrc up front to avoid a visual swap.
+        const rest = urls.filter((u) => u !== firstSrc);
+        setPhotos([firstSrc, ...rest].slice(0, 5));
+      }
+    });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [placeId]);
+
+  const count = photos.length;
+  const hasMulti = count > 1;
+
+  function go(delta) {
+    setIdx((i) => (i + delta + count) % count);
+  }
+
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key === 'Escape')     onClose();
+      if (e.key === 'ArrowLeft'  && hasMulti) go(-1);
+      if (e.key === 'ArrowRight' && hasMulti) go(+1);
+    }
     document.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = '';
     };
-  }, [onClose]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasMulti, count]);
+
+  // Preload neighbours so prev/next is instant.
+  useEffect(() => {
+    if (!hasMulti) return;
+    [(idx + 1) % count, (idx - 1 + count) % count].forEach((i) => {
+      const img = new Image();
+      img.src = photos[i];
+    });
+  }, [idx, photos, count, hasMulti]);
+
+  const current = photos[idx];
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/85 backdrop-blur-sm"
       onClick={onClose}
     >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
+        aria-label="Close photo"
+      >
+        <X className="h-4 w-4" />
+      </button>
+
+      {hasMulti && (
+        <>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); go(-1); }}
+            className="absolute left-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70 sm:left-6"
+            aria-label="Previous photo"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); go(+1); }}
+            className="absolute right-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70 sm:right-6"
+            aria-label="Next photo"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </>
+      )}
+
       <div
-        className="relative max-h-[90vh] max-w-3xl overflow-hidden rounded-2xl shadow-2xl"
+        className="relative flex max-h-[78vh] w-auto max-w-[92vw] items-center justify-center overflow-hidden rounded-2xl shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <img
-          src={src}
+          src={current}
           alt={label}
-          className="block max-h-[85vh] w-auto max-w-full object-contain"
+          className="block max-h-[78vh] w-auto max-w-[92vw] object-contain"
         />
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-5 pb-4 pt-8">
-          <p className="font-display text-base font-semibold text-white">{label}</p>
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/65 to-transparent px-5 pb-3 pt-10">
+          <div className="flex items-baseline justify-between gap-3">
+            <p className="font-display text-base font-semibold text-white">{label}</p>
+            {hasMulti && (
+              <span className="font-mono text-xs text-white/70">{idx + 1} / {count}</span>
+            )}
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70"
-          aria-label="Close photo"
-        >
-          <X className="h-4 w-4" />
-        </button>
       </div>
+
+      {hasMulti && (
+        <div
+          className="mt-3 flex gap-2 px-3"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {photos.map((src, i) => (
+            <button
+              key={src + i}
+              type="button"
+              onClick={() => setIdx(i)}
+              className={`h-14 w-14 shrink-0 overflow-hidden rounded-lg border-2 transition sm:h-16 sm:w-16 ${
+                i === idx
+                  ? 'border-white shadow-lg'
+                  : 'border-white/20 opacity-60 hover:opacity-100'
+              }`}
+              aria-label={`Photo ${i + 1}`}
+            >
+              <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {loading && !hasMulti && (
+        <div className="mt-3 flex items-center gap-2 text-xs text-white/60">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading photos…
+        </div>
+      )}
     </div>
   );
 }

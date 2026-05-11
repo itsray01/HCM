@@ -10,7 +10,42 @@ import { PHOTO_OVERRIDES } from './photoOverrides.js';
  *  3. Wikipedia opensearch / full-text search
  */
 
-const cache = new Map(); // key → url | null
+const cache      = new Map(); // key → url  | null
+const multiCache = new Map(); // key → urls | null
+
+/**
+ * Fetches up to 5 photo URLs for a location. Resolves to an empty array when
+ * we don't have a canonical Google place_id for the location — by design, to
+ * avoid showing wrong images.
+ *
+ * @param {string|null} placeId
+ * @param {string|null} name     used only as a resolution hint when placeId is null
+ * @param {number|null} lat
+ * @param {number|null} lng
+ * @returns {Promise<string[]>}
+ */
+export async function fetchLocationPhotos(placeId, name, lat, lng) {
+  const key = placeId ? `pid:${placeId}` : (name ? `name:${name}` : null);
+  if (!key) return [];
+  if (multiCache.has(key)) return multiCache.get(key);
+
+  const params = new URLSearchParams({ multi: '1' });
+  if (placeId) params.set('placeId', placeId);
+  if (name)    params.set('name', name);
+  if (lat != null) params.set('lat', String(lat));
+  if (lng != null) params.set('lng', String(lng));
+
+  try {
+    const r    = await fetch(`/api/place-photo?${params}`);
+    const data = await r.json();
+    const urls = Array.isArray(data?.urls) ? data.urls : [];
+    multiCache.set(key, urls);
+    return urls;
+  } catch {
+    multiCache.set(key, []);
+    return [];
+  }
+}
 
 // ── Serverless proxy (Google Places + Foursquare, server-side, no CORS) ───────
 
