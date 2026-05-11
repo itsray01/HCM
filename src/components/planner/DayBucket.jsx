@@ -328,10 +328,10 @@ export default function DayBucket({
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-baseline gap-2">
-              <h3 className="font-display text-lg font-semibold text-ink">
+              <h3 className="font-display text-2xl font-semibold text-ink sm:text-3xl">
                 Day {day.day}
               </h3>
-              <span className="text-xs font-medium text-ink/45">{day.dateLabel}</span>
+              <span className="text-sm font-medium text-ink/45">{day.dateLabel}</span>
             </div>
             <p className="truncate text-xs font-medium text-terracotta">{day.subtitle}</p>
           </div>
