@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { CATEGORY_COLORS, googleMapsUrl } from '../../utils/kmlParser.js';
 import { getLocationById } from '../../data/locations.js';
+import { PLACE_IDS } from '../../data/placeIds.js';
 import { PHOTO_OVERRIDES, FORCE_REFETCH } from '../../utils/photoOverrides.js';
 import { fetchLocationPhoto } from '../../utils/fetchLocationPhoto.js';
 import { TimePopover } from './TimePicker.jsx';
@@ -139,7 +140,13 @@ function photoCacheSet(label, placeId, url) {
  *    4. API fetch -> save to localStorage (NEVER to RTDB)
  *  This intentionally never calls onUpdateField, so it cannot trigger RTDB writes. */
 function useAutoPhoto(stop, location) {
-  const placeId = location?.placeId ?? stop.placeId ?? null;
+  // Resolve a canonical Google place_id from three places, in order:
+  //   1. The linked Location's placeId (KML/extras + PLACE_IDS map)
+  //   2. The stop's own placeId (manually set on add-from-search)
+  //   3. PLACE_IDS keyed by the stop's label — handles itinerary stops that
+  //      have `locationId: null` but a name we've still resolved.
+  const placeId =
+    location?.placeId ?? stop.placeId ?? PLACE_IDS[stop.label] ?? null;
   const [autoUrl, setAutoUrl] = useState(() => photoCacheGet(stop.label, placeId));
   const [loading, setLoading] = useState(false);
   const fetchedForRef = useRef(null);

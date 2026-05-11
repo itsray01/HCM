@@ -77,17 +77,19 @@ export default function PhotoResolver({ onClose }) {
     setRows((r) => r.map((row, idx) => (idx === i ? { ...row, accepted: !row.accepted } : row)));
   }
 
-  function copyJson() {
+  // Derived JSON string — also rendered to a visible textarea below so it can
+  // be copied even when the clipboard API is blocked (some contexts).
+  const jsonText = useMemo(() => {
     const obj = {};
     for (const r of rows) {
       if (r.accepted && r.placeId) obj[r.loc.name] = r.placeId;
     }
-    const json = JSON.stringify(obj, null, 2);
-    const body =
-      `export const PLACE_IDS = ${json};\n`;
-    navigator.clipboard.writeText(body);
-    // eslint-disable-next-line no-alert
-    alert(`Copied ${Object.keys(obj).length} place_ids. Paste into src/data/placeIds.js (replace the existing PLACE_IDS export).`);
+    return JSON.stringify(obj, null, 2);
+  }, [rows]);
+
+  function copyJson() {
+    const body = `export const PLACE_IDS = ${jsonText};\n`;
+    try { navigator.clipboard.writeText(body); } catch { /* fall back to textarea */ }
   }
 
   const okCount   = rows.filter((r) => r.status === 'ok').length;
@@ -220,8 +222,21 @@ export default function PhotoResolver({ onClose }) {
         </div>
 
         <footer style={{ padding: '10px 16px', borderTop: '1px solid #2a2a2a', color: '#888', fontSize: 11 }}>
-          Uncheck any wrong matches before clicking "Copy JSON". The clipboard contents replace the
-          PLACE_IDS export in <code>src/data/placeIds.js</code>.
+          <div style={{ marginBottom: 6 }}>
+            Uncheck any wrong matches. Click "Copy JSON" or just select-all in the textarea
+            below. Paste replaces the PLACE_IDS export in <code>src/data/placeIds.js</code>.
+          </div>
+          <textarea
+            readOnly
+            value={jsonText}
+            data-resolver-json="1"
+            style={{
+              width: '100%', height: 100, background: '#020617', color: '#a5f3fc',
+              border: '1px solid #1e293b', borderRadius: 4, padding: 8,
+              fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 11,
+              resize: 'vertical',
+            }}
+          />
         </footer>
       </div>
     </div>
