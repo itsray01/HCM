@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   Plane,
   Home,
@@ -196,6 +196,7 @@ export default function PlannerCard({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [editingPicker, setEditingPicker] = useState(null); // null | 'time' | 'duration'
   const [pickerAnchor, setPickerAnchor] = useState(null);
+  const notesRef = useRef(null);
 
   function openPicker(kind, e) {
     e.stopPropagation();
@@ -211,6 +212,34 @@ export default function PlannerCard({
     stop.notes ?? stop.note ?? '',
     (v) => onUpdateField({ notes: v })
   );
+
+  // Auto-grow the notes textarea to fit all content (no internal scroll).
+  // useLayoutEffect runs before paint, so the box is always the right size on
+  // first render — no scrollbar flash. Re-fires whenever `notes` changes
+  // (mount, Firebase sync, local edits). A ResizeObserver also re-fits on
+  // width changes (window resize, drawer toggling, mobile rotation), since
+  // wrapping changes the required height.
+  useLayoutEffect(() => {
+    const el = notesRef.current;
+    if (!el) return;
+    const fit = () => {
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    };
+    fit();
+    // iOS Safari measures scrollHeight before web fonts paint — re-fit once fonts land.
+    if (document?.fonts?.ready) document.fonts.ready.then(fit).catch(() => {});
+    let ro;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(fit);
+      ro.observe(el);
+    }
+    window.addEventListener('resize', fit);
+    return () => {
+      window.removeEventListener('resize', fit);
+      if (ro) ro.disconnect();
+    };
+  }, [notes]);
   const [costStr, setCostStr, flushCost] = useDebouncedValue(
     stop.cost != null ? String(stop.cost) : '',
     (v) => {
@@ -437,27 +466,29 @@ export default function PlannerCard({
         <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-ink/45 sm:text-[11px]">
           <StickyNote className="h-3 w-3" /> Notes
         </label>
-        <textarea
-          value={notes}
-          onChange={(e) => {
-            setNotes(e.target.value);
-            /* Auto-grow: reset then expand to content height */
-            const el = e.target;
-            el.style.height = 'auto';
-            el.style.height = `${el.scrollHeight}px`;
-          }}
-          onBlur={flushNotes}
-          onClick={(e) => e.stopPropagation()}
-          rows={2}
-          placeholder="Add a note…"
-          className="mt-1 w-full resize-none rounded-lg border border-ink/10 bg-cream/30 px-2.5 py-2 text-sm leading-relaxed text-ink/90 outline-none ring-terracotta/30 placeholder:text-ink/35 focus:bg-white focus:ring-2"
-          style={{
-            wordBreak: 'break-word',
-            overflowWrap: 'anywhere',
-            whiteSpace: 'pre-wrap',
-            maxWidth: '100%',
-          }}
-        />
+          <textarea
+            ref={notesRef}
+            value={notes}
+            onChange={(e) => {
+              setNotes(e.target.value);
+              const el = e.target;
+              el.style.height = 'auto';
+              el.style.height = `${el.scrollHeight}px`;
+            }}
+            onBlur={flushNotes}
+            onClick={(e) => e.stopPropagation()}
+            rows={4}
+            placeholder="Add a note…"
+            className="mt-1 w-full resize-none rounded-lg border border-ink/10 bg-cream/30 px-2.5 py-2 text-sm leading-relaxed text-ink/90 outline-none ring-terracotta/30 placeholder:text-ink/35 focus:bg-white focus:ring-2"
+            style={{
+              wordBreak: 'break-word',
+              overflowWrap: 'anywhere',
+              whiteSpace: 'pre-wrap',
+              maxWidth: '100%',
+              overflow: 'hidden',
+              minHeight: '6.5rem',
+            }}
+          />
       </div>
 
       {/* Bottom row: cost + maps button */}
