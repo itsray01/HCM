@@ -14,11 +14,13 @@ const cache = new Map(); // key → url | null
 
 // ── Serverless proxy (Google Places + Foursquare, server-side, no CORS) ───────
 
-async function fetchViaProxy(name, lat, lng) {
+async function fetchViaProxy(name, lat, lng, placeId) {
   try {
-    const params = new URLSearchParams({ name });
+    const params = new URLSearchParams();
+    if (name)    params.set('name', name);
     if (lat != null) params.set('lat', String(lat));
     if (lng != null) params.set('lng', String(lng));
+    if (placeId) params.set('placeId', placeId);
     const res  = await fetch(`/api/place-photo?${params}`);
     const data = await res.json();
     return data?.url ?? null;
@@ -107,21 +109,26 @@ async function tryWikipedia(name) {
 // ── Main export ───────────────────────────────────────────────────────────────
 
 /**
- * @param {string}      name  Place display name
- * @param {number|null} lat   Latitude  (optional but improves accuracy)
- * @param {number|null} lng   Longitude (optional but improves accuracy)
+ * @param {string}      name     Place display name
+ * @param {number|null} lat      Latitude  (optional but improves accuracy)
+ * @param {number|null} lng      Longitude (optional but improves accuracy)
+ * @param {string|null} placeId  Google Maps place_id — when present, fetches
+ *                                the canonical Place Details photo (same as
+ *                                Wanderlog), bypassing fuzzy text search.
  */
-export async function fetchLocationPhoto(name, lat, lng) {
+export async function fetchLocationPhoto(name, lat, lng, placeId = null) {
   // Strategy 0: manual override — always wins
   if (PHOTO_OVERRIDES[name]) return PHOTO_OVERRIDES[name];
 
-  const key = lat != null ? `${name}|${lat}|${lng}` : name;
+  const key = placeId
+    ? `pid:${placeId}`
+    : (lat != null ? `${name}|${lat}|${lng}` : name);
   if (cache.has(key)) return cache.get(key);
   cache.set(key, null);
 
   try {
-    // Strategy 1: server-side proxy (Google Places → Foursquare)
-    const proxyUrl = await fetchViaProxy(name, lat, lng);
+    // Strategy 1: server-side proxy (Place Details → strict findplace → nearby → Foursquare)
+    const proxyUrl = await fetchViaProxy(name, lat, lng, placeId);
     if (proxyUrl) { cache.set(key, proxyUrl); return proxyUrl; }
 
     // Strategy 2: Wikimedia Commons geosearch (coordinate-based)

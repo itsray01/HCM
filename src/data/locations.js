@@ -1,8 +1,15 @@
 import kmlRaw from './babys-hcm-trip.kml?raw';
 import { parseKml } from '../utils/kmlParser.js';
+import { PLACE_IDS } from './placeIds.js';
 
 /** From KML — all folders */
 const fromKml = parseKml(kmlRaw);
+
+/** Attach canonical Google place_ids by name match. */
+function withPlaceId(loc) {
+  const pid = PLACE_IDS[loc.name];
+  return pid ? { ...loc, placeId: pid } : loc;
+}
 
 /** Ramen Tomidaya appears on itinerary but not in master KML — coordinates from trip prep */
 const ramenTomidaya = {
@@ -352,7 +359,7 @@ const funExtras = [
   },
 ];
 
-/** Full discovery set — KML pins + all manually-added extras */
+/** Full discovery set — KML pins + all manually-added extras, with place_ids attached. */
 export const locations = [
   ...fromKml,
   ramenTomidaya,
@@ -360,7 +367,7 @@ export const locations = [
   ...cafeFoodExtras,
   ...clothesExtras,
   ...funExtras,
-];
+].map(withPlaceId);
 
 /** Location lookup by id */
 export function getLocationById(id) {

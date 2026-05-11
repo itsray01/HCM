@@ -6,6 +6,7 @@ import {
   itineraryParents,
   itineraryGfBff,
 } from '../data/itinerary.js';
+import PhotoResolver from './PhotoResolver.jsx';
 
 const VERSION_IDS = ['all', 'parents', 'gf-bff'];
 
@@ -69,6 +70,7 @@ export default function DebugPanel({ versions, debugInfo, syncStatus }) {
   const [connected, setConn]    = useState(getConnectionState());
   const [_, force]              = useState(0); // tick to refresh "Xs ago" labels
   const [lsCounts, setLsCounts] = useState(readLocalStorageStops);
+  const [resolverOpen, setResolverOpen] = useState(false);
 
   useEffect(() => onConnectionChange(setConn), []);
   useEffect(() => {
@@ -208,6 +210,7 @@ export default function DebugPanel({ versions, debugInfo, syncStatus }) {
             localStorage.removeItem('hcm-itinerary-v4');
             localStorage.removeItem('hcm-itinerary-v3');
             localStorage.removeItem('hcm-photo-cache-v1');
+            localStorage.removeItem('hcm-photo-cache-v2');
             location.reload();
           }}
           style={{
@@ -226,7 +229,17 @@ export default function DebugPanel({ versions, debugInfo, syncStatus }) {
           }}
         >reload</button>
       </div>
-      <div style={{ marginTop: 6 }}>
+      <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <button
+          type="button"
+          onClick={() => setResolverOpen(true)}
+          style={{
+            width: '100%', padding: '6px 8px', background: '#1f6feb', color: 'white',
+            border: '1px solid #2563eb', borderRadius: 4, cursor: 'pointer', fontSize: 11,
+            fontFamily: 'inherit',
+          }}
+          title="Open Photo Resolver — uses Google Places to canonical-ID every location"
+        >Resolve photo IDs</button>
         <button
           type="button"
           onClick={pushSeedToFirebase}
@@ -238,6 +251,7 @@ export default function DebugPanel({ versions, debugInfo, syncStatus }) {
           title="Overwrite Firebase + LS with the bundled SEED (use after data file edits)"
         >push SEED → Firebase (DANGER)</button>
       </div>
+      {resolverOpen && <PhotoResolver onClose={() => setResolverOpen(false)} />}
     </div>
   );
 }

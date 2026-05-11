@@ -91,7 +91,10 @@ function useDebouncedValue(initial, onCommit, delayMs = 600) {
 // shared database. Each browser fetches & caches its own photos locally.
 // This prevents the cascading write loop that was reverting user edits.
 
-const PHOTO_CACHE_KEY = 'hcm-photo-cache-v1';
+// Bumped to v2 when we switched the proxy to strict matching + placeId support,
+// so every device re-fetches and shedss the old loose-match photos.
+const PHOTO_CACHE_KEY = 'hcm-photo-cache-v2';
+const LEGACY_PHOTO_CACHE_KEYS = ['hcm-photo-cache-v1'];
 
 function photoCacheLoad() {
   try {
@@ -104,15 +107,27 @@ function photoCacheSave(cache) {
   try { localStorage.setItem(PHOTO_CACHE_KEY, JSON.stringify(cache)); } catch { /* quota */ }
 }
 
-function photoCacheGet(label) {
-  if (!label) return null;
-  return photoCacheLoad()[label] ?? null;
+// One-time migration: drop any legacy caches so users get the new, stricter results.
+try {
+  for (const k of LEGACY_PHOTO_CACHE_KEYS) localStorage.removeItem(k);
+} catch { /* noop */ }
+
+// Cache by placeId when we have one (canonical), otherwise by label.
+function photoCacheKey(label, placeId) {
+  return placeId ? `pid:${placeId}` : `name:${label}`;
 }
 
-function photoCacheSet(label, url) {
-  if (!label || !url) return;
+function photoCacheGet(label, placeId) {
+  const k = photoCacheKey(label, placeId);
+  if (!k) return null;
+  return photoCacheLoad()[k] ?? null;
+}
+
+function photoCacheSet(label, placeId, url) {
+  const k = photoCacheKey(label, placeId);
+  if (!k || !url) return;
   const cache = photoCacheLoad();
-  cache[label] = url;
+  cache[k] = url;
   photoCacheSave(cache);
 }
 
@@ -124,7 +139,8 @@ function photoCacheSet(label, url) {
  *    4. API fetch -> save to localStorage (NEVER to RTDB)
  *  This intentionally never calls onUpdateField, so it cannot trigger RTDB writes. */
 function useAutoPhoto(stop, location) {
-  const [autoUrl, setAutoUrl] = useState(() => photoCacheGet(stop.label));
+  const placeId = location?.placeId ?? stop.placeId ?? null;
+  const [autoUrl, setAutoUrl] = useState(() => photoCacheGet(stop.label, placeId));
   const [loading, setLoading] = useState(false);
   const fetchedForRef = useRef(null);
 
@@ -151,22 +167,25 @@ function useAutoPhoto(stop, location) {
   useEffect(() => {
     if (persisted) return;
     const name = stop.label;
-    if (!name || fetchedForRef.current === name) return;
-    fetchedForRef.current = name;
+    // Re-fetch when label OR placeId changes (adding a placeId should bust
+    // the previous wrong photo).
+    const fetchKey = `${name}|${placeId ?? ''}`;
+    if (!name || fetchedForRef.current === fetchKey) return;
+    fetchedForRef.current = fetchKey;
 
     let cancelled = false;
     setLoading(true);
-    fetchLocationPhoto(name, lat, lng).then((url) => {
+    fetchLocationPhoto(name, lat, lng, placeId).then((url) => {
       if (cancelled) return;
       setLoading(false);
       if (url) {
         setAutoUrl(url);
-        photoCacheSet(name, url);   // local-only; no RTDB write
+        photoCacheSet(name, placeId, url);   // local-only; no RTDB write
       }
     });
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stop.label]);
+  }, [stop.label, placeId]);
 
   return { photoUrl: persisted, loading: !persisted && loading };
 }
