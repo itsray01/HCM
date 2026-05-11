@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { X, Trash2 } from 'lucide-react';
 
 const inputCls =
-  'mt-1 w-full rounded-xl border border-ink/15 bg-cream/40 px-3 py-2 text-sm text-ink outline-none ring-terracotta/20 focus:ring-2';
+  'mt-1 w-full rounded-xl border border-ink/15 bg-cream/40 px-3 py-3 text-sm text-ink outline-none ring-terracotta/20 focus:ring-2 sm:py-2';
 
 function Field({ label, children }) {
   return (
@@ -110,14 +110,14 @@ export function DayEditDrawer({ open, day, onClose, onSave }) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-ink/15 bg-white px-3 py-1.5 text-xs font-semibold text-ink/70 hover:bg-cream"
+            className="rounded-lg border border-ink/15 bg-white px-4 py-2.5 text-sm font-semibold text-ink/70 hover:bg-cream sm:px-3 sm:py-1.5 sm:text-xs"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={() => { onSave(form); onClose(); }}
-            className="rounded-lg bg-terracotta px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-terracotta/90"
+            className="rounded-lg bg-terracotta px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-terracotta/90 sm:px-4 sm:py-1.5 sm:text-xs"
           >
             Save
           </button>

@@ -173,12 +173,29 @@ const S = {
     group: 'gf-bff',
   },
 
+  // ── Day 4 additions (cont.) ──────────────────────────────────────────────
+  d4_pang_pang: {
+    type: 'place', locationId: 'cafeFood-pang-pang-crab-pot-extra',
+    label: 'PANG PANG CRAB POT', time: '20:30',
+    note: 'NEW from Pei Qi · crab hot pot @ Tầng B3 Vincom Đồng Khởi · book ahead, sharing pot for the table',
+    reservationRequired: true,
+    distance: '~3 km', travel: 'Grab', duration: '~2 hrs',
+    featured: true, group: 'gf-bff',
+  },
+
   // ── Day 5 additions ──────────────────────────────────────────────────────
   d5_bo_ne_ba_nui: {
     type: 'place', locationId: 'cafeFood-bo-ne-ba-nui-extra',
     label: 'Bò Né Bà Nũi', time: '09:30',
     note: 'Classic HCMC morning sizzle plate — beef, fried egg & baguette. ~0.5 km from Airbnb',
     distance: '~0.5 km', travel: 'Walk', duration: '~45 min',
+    group: 'parents',
+  },
+  d5_pho_ky_dong_dinner: {
+    type: 'place', locationId: 'cafeFood-pho-mien-ga-ky-ong-25',
+    label: 'Phở Miến gà Kỳ Đồng', time: '19:30',
+    note: 'NEW from Pei Qi · last-night phở backup if Anan reservation falls through · Michelin Guide listed',
+    distance: '~2 km', travel: 'Grab', duration: '~45 min',
     group: 'parents',
   },
   d5_anan: {
@@ -284,7 +301,6 @@ export const itineraryDays = [
         time: '15:30', note: 'Chill neighbourhood café — recharge before the evening',
         distance: '~1.1 km', travel: 'Grab', duration: '~1.5 hrs', group: 'gf-bff',
       },
-      S.d2_pizza,
       {
         type: 'place', locationId: null, label: 'Sol Kitchen & Bar',
         lat: 10.774107, lng: 106.6971367,
@@ -292,9 +308,10 @@ export const itineraryDays = [
         distance: '~1 km', travel: 'Grab', duration: '~2 hrs', group: 'gf-bff',
       },
       {
-        type: 'place', locationId: null, label: 'Buffet Cửu Vân Long Premium',
-        lat: 10.7765, lng: 106.7045,
-        time: '19:30', note: 'Premium buffet at Saigon Marina IFC — option if everyone wants a big shared dinner',
+        type: 'place', locationId: 'cafeFood-buffet-cuu-van-long-bitexco-extra',
+        label: 'Buffet Cửu Vân Long Premium',
+        time: '19:30', note: 'NEW from Pei Qi · premium seafood buffet @ Bitexco Tower L50 · panoramic city views · big-table option',
+        reservationRequired: true,
         distance: '~4 km', travel: 'Grab', duration: '~2 hrs', shared: true,
       },
       S.d2_rooftop,
@@ -364,14 +381,14 @@ export const itineraryDays = [
   {
     day: 4, dateLabel: 'Thu, May 28',
     subtitle: 'Brunch together · spa · groups split for the afternoon',
-    wakeUp: '08:30', returnTime: '18:30',
+    wakeUp: '08:30', returnTime: '22:30',
     stops: [
       S.d4_airbnb,
       S.d4_brunch,
       S.d4_rosespa,
       {
-        type: 'place', locationId: null, label: 'Quán Thuý 94 - Miến Cua',
-        lat: 10.7910, lng: 106.6970,
+        type: 'place', locationId: 'cafeFood-quan-thuy-94-mien-cua-extra',
+        label: 'Quán Thuý 94 - Miến Cua',
         time: '14:15', note: 'Crab vermicelli noodles — Michelin-listed sister of Quán 94. 84 Đinh Tiên Hoàng, Đa Kao. Steps from Rose Spa — no Grab needed.',
         distance: '~0.7 km', travel: 'Walk', duration: '~1 hr', group: 'parents',
       },
@@ -387,6 +404,7 @@ export const itineraryDays = [
         featured: true, group: 'gf-bff',
       },
       S.d4_sushi_jion,
+      S.d4_pang_pang,
     ],
   },
   {
@@ -397,13 +415,8 @@ export const itineraryDays = [
       S.d5_airbnb,
       S.d5_bo_ne_ba_nui,
       {
-        type: 'place', locationId: 'cafeFood-ngam-cafe-55', label: 'ngâm CAFE',
-        time: '10:30', note: 'Relaxed neighbourhood café close to the Airbnb',
-        distance: '~0.9 km', travel: 'Grab', duration: '~1.5 hrs', group: 'parents',
-      },
-      {
-        type: 'place', locationId: null, label: 'Bánh Canh Cua 87',
-        lat: 10.7905, lng: 106.6900,
+        type: 'place', locationId: 'cafeFood-banh-canh-cua-87-extra',
+        label: 'Bánh Canh Cua 87',
         time: '12:00', note: 'BEST CRAB NOODLES — sister to Bánh Canh Cua 14, often the better bowl. Tân Định. 0.6 km from ngâm CAFE — most efficient lunch on Day 5.',
         distance: '~0.6 km', travel: 'Walk', duration: '~1 hr',
         featured: true, group: 'parents',
@@ -421,17 +434,13 @@ export const itineraryDays = [
         featured: true, group: 'gf-bff',
       },
       {
-        type: 'place', locationId: 'fun-haeu-beauty-salon-67', label: 'HAEU Beauty Salon',
-        time: '12:30', note: 'Nails / brows / hair touch-up — last full day treat',
-        distance: '~0.65 km', travel: 'Walk', duration: '~1.5 hrs', group: 'gf-bff',
-      },
-      {
         type: 'place', locationId: 'cafeFood-garden-kisses-53', label: 'Garden Kisses',
         time: '14:30', note: 'Hidden garden café in Thảo Điền — perfect afternoon wind-down',
         distance: '~0.5 km', travel: 'Walk', duration: '~1.5 hrs', group: 'gf-bff',
       },
       S.d5_rooftop,
       S.d5_anan,
+      S.d5_pho_ky_dong_dinner,
     ],
   },
   {
@@ -479,7 +488,6 @@ export const itineraryParents = [
         time: '15:30', note: 'Tiramisu, Vietnamese cakes & coffee — lovely afternoon stop',
         distance: '~2 km', travel: 'Grab', duration: '~1 hr',
       },
-      S.d2_pizza,
       { ...S.d2_rooftop, note: 'Panoramic D1/D3 skyline — great night view. Leave by 23:00.' },
     ],
   },
@@ -536,13 +544,8 @@ export const itineraryParents = [
       S.d5_airbnb,
       { ...S.d5_bo_ne_ba_nui, group: undefined, shared: false },
       {
-        type: 'place', locationId: 'cafeFood-ngam-cafe-55', label: 'ngâm CAFE',
-        time: '10:30', note: 'Charming neighbourhood café close to the Airbnb — easy, relaxed morning',
-        distance: '~0.9 km', travel: 'Grab', duration: '~1.5 hrs',
-      },
-      {
-        type: 'place', locationId: null, label: 'Bánh Canh Cua 87',
-        lat: 10.7905, lng: 106.6900,
+        type: 'place', locationId: 'cafeFood-banh-canh-cua-87-extra',
+        label: 'Bánh Canh Cua 87',
         time: '12:00', note: 'BEST CRAB NOODLES in Tân Định — only 0.6 km from ngâm CAFE, no backtracking. Sister spot to Bánh Canh Cua 14.',
         distance: '~0.6 km', travel: 'Walk', duration: '~1 hr', featured: true,
       },
@@ -558,6 +561,7 @@ export const itineraryParents = [
         distance: '—', travel: null, duration: '~2 hrs',
       },
       S.d5_rooftop,
+      { ...S.d5_pho_ky_dong_dinner, group: undefined },
     ],
   },
   {
@@ -605,7 +609,6 @@ export const itineraryGfBff = [
         time: '15:30', note: 'Chill neighbourhood café — recharge before the evening',
         distance: '~1.1 km', travel: 'Grab', duration: '~1.5 hrs',
       },
-      S.d2_pizza,
       S.d2_rooftop,
     ],
   },
@@ -641,8 +644,8 @@ export const itineraryGfBff = [
   },
   {
     day: 4, dateLabel: 'Thu, May 28',
-    subtitle: 'Brunch · spa · onsen · sushi dinner — full self-care day',
-    wakeUp: '08:30', returnTime: '21:30',
+    subtitle: 'Brunch · spa · onsen · sushi & crab pot — full self-care day',
+    wakeUp: '08:30', returnTime: '23:00',
     stops: [
       S.d4_airbnb,
       S.d4_brunch,
@@ -653,6 +656,7 @@ export const itineraryGfBff = [
         distance: '~2.1 km', travel: 'Grab', duration: '~2 hrs', featured: true,
       },
       { ...S.d4_sushi_jion, group: undefined },
+      { ...S.d4_pang_pang, group: undefined },
     ],
   },
   {
@@ -665,11 +669,6 @@ export const itineraryGfBff = [
         type: 'place', locationId: 'cafeFood-dalaland-coffee-59', label: 'Dalaland Coffee',
         time: '10:30', note: 'Thảo Điền institution — great brunch menu + aesthetic shots',
         distance: '~6.6 km', travel: 'Grab', duration: '~1.5 hrs', featured: true,
-      },
-      {
-        type: 'place', locationId: 'fun-haeu-beauty-salon-67', label: 'HAEU Beauty Salon',
-        time: '12:30', note: 'Nails / brows / hair touch-up — treat yourself on the last full day',
-        distance: '~0.65 km', travel: 'Walk', duration: '~1.5 hrs',
       },
       {
         type: 'place', locationId: 'cafeFood-garden-kisses-53', label: 'Garden Kisses',

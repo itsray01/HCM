@@ -64,7 +64,7 @@ function DiscoveryItem({ location, scheduledDays, onAddToActive, onFocus, isFocu
       ref={setNodeRef}
       style={style}
       onClick={onFocus}
-      className={`group/item flex items-center gap-2.5 rounded-xl border bg-white p-2.5 shadow-sm transition cursor-pointer ${
+      className={`group/item flex items-center gap-2 rounded-xl border bg-white px-2 py-3 shadow-sm transition cursor-pointer sm:gap-2.5 sm:p-2.5 ${
         isFocused ? 'border-terracotta/50 ring-2 ring-terracotta/15' : 'border-ink/[0.08] hover:border-terracotta/30 hover:shadow-md'
       }`}
     >
@@ -73,11 +73,11 @@ function DiscoveryItem({ location, scheduledDays, onAddToActive, onFocus, isFocu
         {...attributes}
         {...listeners}
         onClick={(e) => e.stopPropagation()}
-        className="-ml-1 flex h-6 w-4 shrink-0 cursor-grab items-center justify-center rounded text-ink/25 hover:text-ink/60 active:cursor-grabbing"
+        className="-ml-1 flex h-9 w-6 shrink-0 cursor-grab items-center justify-center rounded text-ink/25 hover:text-ink/60 active:cursor-grabbing sm:h-6 sm:w-4"
         aria-label={`Drag ${location.name}`}
         tabIndex={-1}
       >
-        <GripVertical className="h-3.5 w-3.5" />
+        <GripVertical className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
       </button>
 
       <div
@@ -103,11 +103,11 @@ function DiscoveryItem({ location, scheduledDays, onAddToActive, onFocus, isFocu
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onAddToActive(); }}
-        className="shrink-0 rounded-full p-1.5 text-ink/40 opacity-0 transition group-hover/item:opacity-100 hover:bg-terracotta/10 hover:text-terracotta"
+        className="shrink-0 rounded-full p-3 text-ink/40 transition sm:p-1.5 sm:opacity-0 sm:group-hover/item:opacity-100 hover:bg-terracotta/10 hover:text-terracotta active:bg-terracotta/10 active:text-terracotta"
         title="Add to active day"
         aria-label="Add to active day"
       >
-        <Plus className="h-3.5 w-3.5" />
+        <Plus className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
       </button>
 
       <a
@@ -115,11 +115,11 @@ function DiscoveryItem({ location, scheduledDays, onAddToActive, onFocus, isFocu
         target="_blank"
         rel="noopener noreferrer"
         onClick={(e) => e.stopPropagation()}
-        className="shrink-0 rounded-full p-1.5 text-ink/40 opacity-0 transition group-hover/item:opacity-100 hover:bg-ink/5 hover:text-ink"
+        className="shrink-0 rounded-full p-3 text-ink/40 transition sm:p-1.5 sm:opacity-0 sm:group-hover/item:opacity-100 hover:bg-ink/5 hover:text-ink active:bg-ink/5 active:text-ink"
         title="Open in Google Maps"
         aria-label="Open in Google Maps"
       >
-        <ExternalLink className="h-3.5 w-3.5" />
+        <ExternalLink className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
       </a>
     </li>
   );
@@ -232,7 +232,7 @@ export default function DiscoveryPanel({
       </div>
 
       {/* List */}
-      <ul className="mt-2 max-h-[420px] space-y-2 overflow-y-auto pr-1">
+      <ul className="mt-2 max-h-[60vh] space-y-2 overflow-y-auto pr-1 sm:max-h-[420px]">
         {filtered.map((loc) => (
           <DiscoveryItem
             key={loc.id}

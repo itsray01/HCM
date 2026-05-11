@@ -19,7 +19,7 @@ const BUILD_TIME = typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : 'dev
 const BUILD_ID   = typeof __BUILD_ID__   !== 'undefined' ? __BUILD_ID__   : 'dev';
 
 const TRIP_ID     = 'hcm-2026';
-const LS_KEY      = 'hcm-itinerary-v6'; // bumped: clears stop-revival rot
+const LS_KEY      = 'hcm-itinerary-v7'; // bumped: PANG PANG + Bitexco buffet + Bánh Canh Cua 87 etc.
 const VERSION_IDS = ['all', 'parents', 'gf-bff'];
 
 const SEED = {

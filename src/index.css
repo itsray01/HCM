@@ -5,10 +5,71 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* Prevent text inflation on orientation change */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /*
+      iOS Safari bug: overflow-x: hidden on body alone does NOT prevent
+      horizontal scrolling. Must also set it on the html element.
+    */
+    overflow-x: hidden;
+    max-width: 100%;
   }
+
   body {
     @apply m-0 min-h-screen font-sans antialiased;
     background-color: #F9F6F1;
     color: #2D2417;
+    overflow-x: hidden;
+    max-width: 100%;
+    /* Improve rendering on mobile */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /*
+    iOS auto-zoom prevention: Safari zooms into any input/textarea with
+    font-size < 16px. Setting exactly 16px on mobile (< sm breakpoint)
+    prevents this while keeping desktop sizes unchanged.
+    !important is required because Tailwind utility classes have higher
+    cascade-layer specificity than @layer base.
+  */
+  @media (max-width: 639px) {
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+      /* Override line-height too so text doesn't look too spaced */
+      line-height: 1.5;
+    }
+  }
+
+  /* Remove default tap flash on mobile */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Faster tap response — no 300ms delay on buttons and links */
+  button,
+  a,
+  label,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Minimum 44px touch target helper (Apple HIG / WCAG) */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
   }
 }

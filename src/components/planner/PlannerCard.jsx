@@ -28,6 +28,7 @@ import { CATEGORY_COLORS, googleMapsUrl } from '../../utils/kmlParser.js';
 import { getLocationById } from '../../data/locations.js';
 import { PHOTO_OVERRIDES, FORCE_REFETCH } from '../../utils/photoOverrides.js';
 import { fetchLocationPhoto } from '../../utils/fetchLocationPhoto.js';
+import { TimePopover, DurationPopover } from './TimePicker.jsx';
 
 const CATEGORY_ICONS = {
   clothes: ShoppingBag,
@@ -193,6 +194,18 @@ export default function PlannerCard({
 
   const { photoUrl, loading: photoLoading } = useAutoPhoto(stop, location);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [editingPicker, setEditingPicker] = useState(null); // null | 'time' | 'duration'
+  const [pickerAnchor, setPickerAnchor] = useState(null);
+
+  function openPicker(kind, e) {
+    e.stopPropagation();
+    setPickerAnchor(e.currentTarget.getBoundingClientRect());
+    setEditingPicker(kind);
+  }
+  function closePicker() {
+    setEditingPicker(null);
+    setPickerAnchor(null);
+  }
 
   const [notes, setNotes, flushNotes] = useDebouncedValue(
     stop.notes ?? stop.note ?? '',
@@ -218,7 +231,7 @@ export default function PlannerCard({
     <>
     <article
       onClick={onFocus}
-      className={`group relative flex flex-col gap-3 rounded-2xl border bg-white p-4 shadow-sm transition ${
+      className={`group relative flex min-w-0 flex-col gap-3 overflow-hidden rounded-2xl border bg-white p-4 shadow-sm transition ${
         isFocused
           ? 'border-terracotta/60 ring-2 ring-terracotta/20'
           : 'border-ink/[0.08] hover:-translate-y-px hover:shadow-md'
@@ -232,7 +245,7 @@ export default function PlannerCard({
             {...dragAttributes}
             {...dragListeners}
             onClick={(e) => e.stopPropagation()}
-            className="-ml-1 flex h-7 w-5 shrink-0 cursor-grab items-center justify-center rounded text-ink/25 transition hover:text-ink/60 active:cursor-grabbing"
+            className="-ml-1 flex h-10 w-7 shrink-0 cursor-grab items-center justify-center rounded text-ink/25 transition hover:text-ink/60 active:cursor-grabbing sm:h-7 sm:w-5"
             aria-label="Drag to reorder"
             tabIndex={-1}
           >
@@ -245,7 +258,7 @@ export default function PlannerCard({
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-            <h3 className="truncate font-display text-base font-semibold text-ink">
+            <h3 className="min-w-0 break-words font-display text-base font-semibold text-ink">
               {stop.label}
             </h3>
             {category && (
@@ -255,11 +268,26 @@ export default function PlannerCard({
             )}
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
-            {stop.time && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-ink/[0.04] px-2 py-0.5 text-[11px] font-medium text-ink/65">
+            {stop.time ? (
+              <button
+                type="button"
+                onClick={(e) => openPicker('time', e)}
+                className="inline-flex items-center gap-1 rounded-full bg-ink/[0.04] px-2 py-0.5 text-[11px] font-medium text-ink/65 transition hover:bg-terracotta/10 hover:text-terracotta"
+                title="Edit time"
+              >
                 <Clock className="h-2.5 w-2.5" />
                 {stop.time}
-              </span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={(e) => openPicker('time', e)}
+                className="inline-flex items-center gap-1 rounded-full border border-dashed border-ink/15 px-2 py-0.5 text-[11px] font-medium text-ink/35 transition hover:border-terracotta/40 hover:text-terracotta"
+                title="Set time"
+              >
+                <Clock className="h-2.5 w-2.5" />
+                Set time
+              </button>
             )}
             {stop.travel && (
               <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${
@@ -275,7 +303,28 @@ export default function PlannerCard({
                 {stop.distance && ` · ${stop.distance}`}
               </span>
             )}
-            {stop.duration && (
+            {stop.type === 'place' && (
+              stop.duration ? (
+                <button
+                  type="button"
+                  onClick={(e) => openPicker('duration', e)}
+                  className="rounded-full px-1.5 py-0.5 text-[11px] text-ink/40 transition hover:bg-terracotta/10 hover:text-terracotta"
+                  title="Edit duration"
+                >
+                  {stop.duration}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={(e) => openPicker('duration', e)}
+                  className="rounded-full border border-dashed border-ink/15 px-1.5 py-0.5 text-[11px] text-ink/35 transition hover:border-terracotta/40 hover:text-terracotta"
+                  title="Set duration"
+                >
+                  + duration
+                </button>
+              )
+            )}
+            {stop.type !== 'place' && stop.duration && (
               <span className="text-[11px] text-ink/40">{stop.duration}</span>
             )}
           </div>
@@ -298,10 +347,10 @@ export default function PlannerCard({
             e.stopPropagation();
             if (window.confirm('Remove this stop from the plan?')) onDelete();
           }}
-          className="-mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-ink/35 transition hover:bg-red-50 hover:text-red-600 sm:opacity-0 sm:group-hover:opacity-100"
+          className="-mr-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink/35 transition hover:bg-red-50 hover:text-red-600 active:bg-red-50 active:text-red-600 sm:h-7 sm:w-7 sm:opacity-0 sm:group-hover:opacity-100"
           aria-label="Remove stop"
         >
-          <Trash2 className="h-3.5 w-3.5" />
+          <Trash2 className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
         </button>
       </header>
 
@@ -311,7 +360,7 @@ export default function PlannerCard({
           <span className="text-[11px] font-bold uppercase tracking-wider text-ink/80">
             Reservation
           </span>
-          <div className="flex overflow-hidden rounded-full border border-ink/10 bg-cream/40 text-[11px]">
+          <div className="flex overflow-hidden rounded-full border border-ink/10 bg-cream/40 text-xs sm:text-[11px]">
             <ResStatusBtn
               active={reservation === 'pending'}
               onClick={(e) => { e.stopPropagation(); handleReservationCycle('pending'); }}
@@ -330,10 +379,10 @@ export default function PlannerCard({
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onUpdateField({ reservationStatus: null }); }}
-                className="flex items-center gap-1 px-2 py-1 text-ink/45 hover:bg-ink/5"
+                className="flex items-center gap-1 px-3 py-2 text-ink/45 hover:bg-ink/5 sm:px-2 sm:py-1"
                 aria-label="Clear reservation status"
               >
-                <CircleSlash className="h-3 w-3" />
+                <CircleSlash className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
               </button>
             )}
           </div>
@@ -354,8 +403,8 @@ export default function PlannerCard({
       {/* Group tag — only for place stops */}
       {stop.type === 'place' && (
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
-          <span className="shrink-0 text-[11px] font-bold uppercase tracking-wider text-ink/80">Who</span>
-          <div className="flex flex-wrap gap-1">
+          <span className="shrink-0 text-xs font-bold uppercase tracking-wider text-ink/80 sm:text-[11px]">Who</span>
+          <div className="flex flex-wrap gap-1.5 sm:gap-1">
             {[
               { value: null,      label: 'Everyone',        Icon: Users,    active: 'bg-terracotta text-white border-terracotta' },
               { value: 'parents', label: 'Parents',         Icon: Heart,    active: 'bg-amber text-white border-amber' },
@@ -368,13 +417,13 @@ export default function PlannerCard({
                   key={String(value)}
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onUpdateField({ group: value }); }}
-                  className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold transition ${
+                  className={`inline-flex items-center gap-1 rounded-full border px-3 py-2 text-xs font-semibold transition active:scale-95 sm:px-2 sm:py-0.5 sm:text-[11px] ${
                     isActive
                       ? active
                       : 'border-ink/10 bg-white text-ink/40 hover:border-ink/20 hover:text-ink/65'
                   }`}
                 >
-                  {TagIcon && <TagIcon className="h-2.5 w-2.5" />}
+                  {TagIcon && <TagIcon className="h-3 w-3 sm:h-2.5 sm:w-2.5" />}
                   {label}
                 </button>
               );
@@ -385,25 +434,37 @@ export default function PlannerCard({
 
       {/* Notes */}
       <div>
-        <label className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-ink/45">
+        <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-ink/45 sm:text-[11px]">
           <StickyNote className="h-3 w-3" /> Notes
         </label>
         <textarea
           value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          onChange={(e) => {
+            setNotes(e.target.value);
+            /* Auto-grow: reset then expand to content height */
+            const el = e.target;
+            el.style.height = 'auto';
+            el.style.height = `${el.scrollHeight}px`;
+          }}
           onBlur={flushNotes}
           onClick={(e) => e.stopPropagation()}
           rows={2}
           placeholder="Add a note…"
-          className="mt-1 w-full resize-none rounded-lg border border-ink/10 bg-cream/30 px-2.5 py-2 text-sm text-ink/90 outline-none ring-terracotta/30 placeholder:text-ink/35 focus:bg-white focus:ring-2"
+          className="mt-1 w-full resize-none rounded-lg border border-ink/10 bg-cream/30 px-2.5 py-2 text-sm leading-relaxed text-ink/90 outline-none ring-terracotta/30 placeholder:text-ink/35 focus:bg-white focus:ring-2"
+          style={{
+            wordBreak: 'break-word',
+            overflowWrap: 'anywhere',
+            whiteSpace: 'pre-wrap',
+            maxWidth: '100%',
+          }}
         />
       </div>
 
       {/* Bottom row: cost + maps button */}
       <footer className="flex items-stretch gap-2">
         <label className="relative flex flex-1 items-center" onClick={(e) => e.stopPropagation()}>
-          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink/40">
-            <CircleDollarSign className="h-3.5 w-3.5" />
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/40 sm:left-2.5">
+            <CircleDollarSign className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
           </span>
           <input
             type="number"
@@ -414,7 +475,7 @@ export default function PlannerCard({
             onChange={(e) => setCostStr(e.target.value)}
             onBlur={flushCost}
             placeholder="0"
-            className="w-full rounded-lg border border-ink/10 bg-cream/30 py-1.5 pl-8 pr-2 text-sm tabular-nums text-ink outline-none ring-terracotta/30 placeholder:text-ink/30 focus:bg-white focus:ring-2"
+            className="w-full rounded-lg border border-ink/10 bg-cream/30 py-2.5 pl-9 pr-2 text-sm tabular-nums text-ink outline-none ring-terracotta/30 placeholder:text-ink/30 focus:bg-white focus:ring-2 sm:py-1.5 sm:pl-8"
             aria-label="Estimated cost"
           />
         </label>
@@ -424,11 +485,11 @@ export default function PlannerCard({
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-xs font-semibold text-cream transition hover:bg-maroon"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2.5 text-sm font-semibold text-cream transition hover:bg-maroon active:bg-maroon sm:px-3 sm:py-1.5 sm:text-xs"
           >
-            <MapPin className="h-3.5 w-3.5" />
+            <MapPin className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
             Maps
-            <ExternalLink className="h-3 w-3 opacity-70" />
+            <ExternalLink className="h-3.5 w-3.5 opacity-70 sm:h-3 sm:w-3" />
           </a>
         )}
       </footer>
@@ -445,6 +506,29 @@ export default function PlannerCard({
         onClose={() => setLightboxOpen(false)}
       />,
       document.body
+    )}
+
+    {editingPicker === 'time' && (
+      <TimePopover
+        value={stop.time}
+        anchorRect={pickerAnchor}
+        onCancel={closePicker}
+        onCommit={(v) => {
+          onUpdateField({ time: v });
+          closePicker();
+        }}
+      />
+    )}
+    {editingPicker === 'duration' && (
+      <DurationPopover
+        value={stop.duration}
+        anchorRect={pickerAnchor}
+        onCancel={closePicker}
+        onCommit={(v) => {
+          onUpdateField({ duration: v });
+          closePicker();
+        }}
+      />
     )}
   </>
   );
@@ -557,10 +641,10 @@ function PhotoThumb({ photoUrl, loading, label, accent, icon: Icon, onOpen, onCo
           type="button"
           onClick={openEdit}
           title="Correct this photo"
-          className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-white text-ink/50 shadow ring-1 ring-ink/10 transition hover:text-terracotta sm:opacity-0 sm:group-hover/photo:opacity-100"
+          className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white text-ink/50 shadow ring-1 ring-ink/10 transition hover:text-terracotta active:text-terracotta sm:-right-1.5 sm:-top-1.5 sm:h-5 sm:w-5 sm:opacity-0 sm:group-hover/photo:opacity-100"
           aria-label="Correct photo"
         >
-          <Pencil className="h-2.5 w-2.5" />
+          <Pencil className="h-3 w-3 sm:h-2.5 sm:w-2.5" />
         </button>
       </div>
     );
@@ -585,10 +669,10 @@ function PhotoThumb({ photoUrl, loading, label, accent, icon: Icon, onOpen, onCo
         type="button"
         onClick={openEdit}
         title="Add a photo URL"
-        className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-white text-ink/50 shadow ring-1 ring-ink/10 transition hover:text-terracotta sm:opacity-0 sm:group-hover/photo:opacity-100"
+        className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white text-ink/50 shadow ring-1 ring-ink/10 transition hover:text-terracotta active:text-terracotta sm:-right-1.5 sm:-top-1.5 sm:h-5 sm:w-5 sm:opacity-0 sm:group-hover/photo:opacity-100"
         aria-label="Add photo"
       >
-        <Pencil className="h-2.5 w-2.5" />
+        <Pencil className="h-3 w-3 sm:h-2.5 sm:w-2.5" />
       </button>
     </div>
   );
@@ -642,9 +726,9 @@ function ResStatusBtn({ active, onClick, icon: Icon, label, activeBg }) {
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-1 px-2.5 py-1 font-semibold transition ${active ? activeBg : 'text-ink/55 hover:bg-ink/5'}`}
+      className={`flex items-center gap-1 px-3 py-2.5 font-semibold transition sm:px-2.5 sm:py-1 ${active ? activeBg : 'text-ink/55 hover:bg-ink/5 active:bg-ink/5'}`}
     >
-      <Icon className="h-3 w-3" />
+      <Icon className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
       {label}
     </button>
   );

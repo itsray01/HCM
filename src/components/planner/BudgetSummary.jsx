@@ -37,9 +37,9 @@ export default function BudgetSummary({ days, groupLabel }) {
       </div>
 
       {fixedTotal > 0 && (
-        <div className="mt-3 grid grid-cols-3 gap-2 border-t border-cream/10 pt-3 text-[11px]">
+        <div className="mt-3 grid grid-cols-3 gap-2 border-t border-cream/10 pt-3 text-xs sm:text-[11px]">
           <div className="flex items-center gap-1.5">
-            <Plane className="h-3 w-3 text-cream/60" />
+            <Plane className="h-3.5 w-3.5 shrink-0 text-cream/60 sm:h-3 sm:w-3" />
             <div className="min-w-0">
               <div className="text-cream/55">Flights</div>
               <div className="font-semibold tabular-nums text-cream">
@@ -48,7 +48,7 @@ export default function BudgetSummary({ days, groupLabel }) {
             </div>
           </div>
           <div className="flex items-center gap-1.5">
-            <Home className="h-3 w-3 text-cream/60" />
+            <Home className="h-3.5 w-3.5 shrink-0 text-cream/60 sm:h-3 sm:w-3" />
             <div className="min-w-0">
               <div className="text-cream/55">Lodging</div>
               <div className="font-semibold tabular-nums text-cream">
@@ -57,9 +57,9 @@ export default function BudgetSummary({ days, groupLabel }) {
             </div>
           </div>
           <div className="flex items-center gap-1.5">
-            <Wallet className="h-3 w-3 text-cream/60" />
+            <Wallet className="h-3.5 w-3.5 shrink-0 text-cream/60 sm:h-3 sm:w-3" />
             <div className="min-w-0">
-              <div className="text-cream/55">On the ground</div>
+              <div className="text-cream/55">Ground</div>
               <div className="font-semibold tabular-nums text-cream">
                 ${formatCurrency(variableTotal)}
               </div>

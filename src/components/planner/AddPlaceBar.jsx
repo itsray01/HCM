@@ -155,7 +155,7 @@ export default function AddPlaceBar({
             onChange={(e) => { setQuery(e.target.value); setSearchOpen(true); setChosen(null); }}
             onFocus={() => { setSearchOpen(true); setLabelsOpen(false); }}
             placeholder="Search and add a place to your trip…"
-            className="w-full rounded-xl bg-transparent py-2 pl-10 pr-8 text-sm font-medium text-ink outline-none placeholder:font-normal placeholder:text-ink/50"
+            className="w-full rounded-xl bg-transparent py-3 pl-10 pr-8 text-sm font-medium text-ink outline-none placeholder:font-normal placeholder:text-ink/50 sm:py-2"
             aria-label="Search places to add"
             autoComplete="off"
           />
@@ -203,7 +203,7 @@ export default function AddPlaceBar({
 
       {/* ── Search dropdown ──────────────────────────────────────── */}
       {showDropdown && !chosen && (
-        <div className="absolute left-0 right-0 top-full mt-2 max-h-[420px] overflow-y-auto overscroll-contain rounded-2xl border border-ink/10 bg-white shadow-xl">
+        <div className="absolute left-0 right-0 top-full mt-2 max-h-[55vh] overflow-y-auto overscroll-contain rounded-2xl border border-ink/10 bg-white shadow-xl sm:max-h-[420px]">
           {query.trim().length < 2 ? (
             <SearchHint />
           ) : (
@@ -417,7 +417,7 @@ function DayPickerStep({ location, days, scheduledDays, onPick, onBack }) {
 
 function LabelsPopover({ days, activeFilter, onPick }) {
   return (
-    <div className="absolute right-0 top-full z-40 mt-2 w-[260px] overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-xl">
+    <div className="absolute left-0 right-0 top-full z-40 mt-2 overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-xl sm:left-auto sm:w-[260px]">
       <div className="px-3 pt-2.5 pb-1 text-[11px] font-semibold uppercase tracking-wider text-ink/45">
         Categories
       </div>

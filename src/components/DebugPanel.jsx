@@ -1,7 +1,19 @@
 import { useEffect, useState } from 'react';
-import { onConnectionChange, getConnectionState } from '../firebase.js';
+import { ref as dbRef, set } from 'firebase/database';
+import { rtdb, onConnectionChange, getConnectionState } from '../firebase.js';
+import {
+  itineraryDays,
+  itineraryParents,
+  itineraryGfBff,
+} from '../data/itinerary.js';
 
 const VERSION_IDS = ['all', 'parents', 'gf-bff'];
+
+const SEED = {
+  all:      itineraryDays,
+  parents:  itineraryParents,
+  'gf-bff': itineraryGfBff,
+};
 
 function fmtTime(ts) {
   if (!ts) return '—';
@@ -18,7 +30,7 @@ function ago(ts) {
 
 function readLocalStorageStops() {
   try {
-    const raw = localStorage.getItem('hcm-itinerary-v6');
+    const raw = localStorage.getItem('hcm-itinerary-v7');
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     return VERSION_IDS.reduce((acc, vId) => {
@@ -28,6 +40,28 @@ function readLocalStorageStops() {
   } catch {
     return null;
   }
+}
+
+function stripUndefined(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+async function pushSeedToFirebase() {
+  // eslint-disable-next-line no-alert
+  const ok = window.confirm(
+    'Overwrite Firebase itinerary with the bundled SEED? This will replace ALL current itinerary data for everyone.'
+  );
+  if (!ok) return;
+  for (const vId of VERSION_IDS) {
+    const r = dbRef(rtdb, `trips/hcm-2026/versions/${vId}`);
+    // eslint-disable-next-line no-await-in-loop
+    await set(r, { days: stripUndefined(SEED[vId]) });
+  }
+  // clear all known LS keys so the next reload picks up fresh data
+  ['hcm-itinerary-v7', 'hcm-itinerary-v6', 'hcm-itinerary-v5', 'hcm-itinerary-v4', 'hcm-itinerary-v3'].forEach(
+    (k) => localStorage.removeItem(k)
+  );
+  location.reload();
 }
 
 export default function DebugPanel({ versions, debugInfo, syncStatus }) {
@@ -168,6 +202,7 @@ export default function DebugPanel({ versions, debugInfo, syncStatus }) {
         <button
           type="button"
           onClick={() => {
+            localStorage.removeItem('hcm-itinerary-v7');
             localStorage.removeItem('hcm-itinerary-v6');
             localStorage.removeItem('hcm-itinerary-v5');
             localStorage.removeItem('hcm-itinerary-v4');
@@ -190,6 +225,18 @@ export default function DebugPanel({ versions, debugInfo, syncStatus }) {
             fontFamily: 'inherit',
           }}
         >reload</button>
+      </div>
+      <div style={{ marginTop: 6 }}>
+        <button
+          type="button"
+          onClick={pushSeedToFirebase}
+          style={{
+            width: '100%', padding: '6px 8px', background: '#7c2d12', color: 'white',
+            border: '1px solid #9a3412', borderRadius: 4, cursor: 'pointer', fontSize: 11,
+            fontFamily: 'inherit',
+          }}
+          title="Overwrite Firebase + LS with the bundled SEED (use after data file edits)"
+        >push SEED → Firebase (DANGER)</button>
       </div>
     </div>
   );

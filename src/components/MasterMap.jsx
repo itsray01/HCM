@@ -23,7 +23,7 @@ const LABELS = {
 
 export default function MasterMap() {
   return (
-    <section id="map" className="scroll-mt-20 border-b border-ink/10 bg-white py-12">
+    <section id="map" className="scroll-mt-20 border-b border-ink/10 bg-white py-12 overflow-x-hidden">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <h2 className="font-display text-2xl font-semibold text-ink sm:text-3xl">
           Master map

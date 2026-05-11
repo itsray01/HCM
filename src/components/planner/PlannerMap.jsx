@@ -31,15 +31,14 @@ const MAP_STYLES = [
   { featureType: 'landscape.natural',         elementType: 'geometry',            stylers: [{ color: '#d8e8c8' }] },
 ];
 
-const MAP_OPTIONS = {
+const MAP_OPTIONS_BASE = {
   styles:               MAP_STYLES,
   disableDefaultUI:     false,
   zoomControl:          true,
   mapTypeControl:       false,
   streetViewControl:    false,
-  fullscreenControl:    false,
+  fullscreenControl:    true,
   clickableIcons:       false,
-  gestureHandling:      'greedy',
 };
 
 const CATEGORY_LABEL = {
@@ -130,7 +129,7 @@ function resolveDayStops(day) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function PlannerMap({ activeDay, focusedLocationId, categoryFilter = null }) {
+export default function PlannerMap({ activeDay, focusedLocationId, categoryFilter = null, gestureHandling = 'cooperative' }) {
   const { isLoaded } = useJsApiLoader({
     id:              'google-map-script',
     googleMapsApiKey: GOOGLE_KEY,
@@ -165,6 +164,31 @@ export default function PlannerMap({ activeDay, focusedLocationId, categoryFilte
     if (loc) mapRef.panTo({ lat: loc.lat, lng: loc.lng });
   }, [mapRef, focusedLocationId]);
 
+  // Fit map to active day's stops so routes & pins stay in frame (esp. mobile)
+  useEffect(() => {
+    if (!mapRef || !window.google?.maps) return;
+    if (dayStops.length === 0) {
+      mapRef.panTo(DEFAULT_CENTER);
+      mapRef.setZoom(DEFAULT_ZOOM);
+      return;
+    }
+    if (dayStops.length === 1) {
+      mapRef.panTo({ lat: dayStops[0].lat, lng: dayStops[0].lng });
+      mapRef.setZoom(15);
+      return;
+    }
+    const bounds = new window.google.maps.LatLngBounds();
+    for (const s of dayStops) bounds.extend({ lat: s.lat, lng: s.lng });
+    const pad = 56;
+    mapRef.fitBounds(bounds, pad);
+    // Re-run after layout — map container may have just become visible (mobile Map tab)
+    const t = window.setTimeout(() => {
+      window.google.maps.event.trigger(mapRef, 'resize');
+      mapRef.fitBounds(bounds, pad);
+    }, 200);
+    return () => window.clearTimeout(t);
+  }, [mapRef, activeDay?.day, dayStops]);
+
   const onMapLoad = useCallback((m) => setMapRef(m), []);
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -183,7 +207,7 @@ export default function PlannerMap({ activeDay, focusedLocationId, categoryFilte
         mapContainerStyle={{ width: '100%', height: '100%' }}
         center={DEFAULT_CENTER}
         zoom={DEFAULT_ZOOM}
-        options={MAP_OPTIONS}
+        options={{ ...MAP_OPTIONS_BASE, gestureHandling }}
         onLoad={onMapLoad}
         onClick={() => setActiveMarker(null)}
       >
