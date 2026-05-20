@@ -58,19 +58,53 @@ function photoUrl(ref) {
 }
 
 // 0. Canonical lookup via place_id — same data Wanderlog uses.
-//    Returns { url, urls } — `url` is the first photo, `urls` is up to 10.
+//    Returns { url, urls, detail } — `url` is the first photo, `urls` is up to
+//    10, `detail` is the rich Wanderlog-style write-up data.
 async function tryPlaceDetails(placeId) {
+  // Includes editorial_summary (the paragraph Wanderlog shows), rating, hours,
+  // address, website, and the canonical Google Maps URL.
+  const fields = [
+    'photos', 'name', 'place_id',
+    'editorial_summary',
+    'formatted_address',
+    'rating', 'user_ratings_total',
+    'opening_hours',
+    'website',
+    'url',
+    'types',
+    'price_level',
+  ].join(',');
   const url =
     `https://maps.googleapis.com/maps/api/place/details/json` +
-    `?place_id=${encodeURIComponent(placeId)}&fields=photos,name,place_id` +
+    `?place_id=${encodeURIComponent(placeId)}&fields=${fields}` +
     `&key=${GOOGLE_KEY}`;
-  const data  = await fetch(url).then((r) => r.json());
-  const refs  = (data?.result?.photos ?? [])
+  const data   = await fetch(url).then((r) => r.json());
+  const result = data?.result || {};
+  const refs   = (result.photos ?? [])
     .map((p) => p.photo_reference)
     .filter(Boolean);
-  if (!refs.length) return null;
-  const urls = refs.map(photoUrl);
-  return { url: urls[0], urls };
+  const urls   = refs.map(photoUrl);
+
+  const detail = {
+    name:         result.name        ?? null,
+    address:      result.formatted_address ?? null,
+    rating:       typeof result.rating === 'number' ? result.rating : null,
+    ratingCount:  result.user_ratings_total ?? null,
+    summary:      result.editorial_summary?.overview ?? null,
+    hours:        result.opening_hours?.weekday_text ?? null,
+    openNow:      result.opening_hours?.open_now ?? null,
+    website:      result.website ?? null,
+    googleUrl:    result.url ?? null,
+    types:        result.types ?? null,
+    priceLevel:   result.price_level ?? null,
+  };
+
+  if (!refs.length) {
+    // No photos but we may still have useful detail — return it so the panel
+    // can show the write-up even when the image proxy chain fails later.
+    return { url: null, urls: [], detail };
+  }
+  return { url: urls[0], urls, detail };
 }
 
 // 1. Stricter text search with POINT bias. Returns { url, placeId, distance } so
@@ -159,13 +193,16 @@ export default async function handler(req, res) {
       if (fp?.placeId) effectivePid = fp.placeId;
     }
 
-    // 0. Canonical lookup — Place Details. The ONLY path that returns multi.
+    // 0. Canonical lookup — Place Details. The ONLY path that returns multi
+    //    AND the only path that returns the rich `detail` block used by the
+    //    Wanderlog-style POI write-up panel.
     if (effectivePid) {
       const det = await tryPlaceDetails(effectivePid);
       if (det) {
         return res.json({
           url:     det.url,
           urls:    wantMulti ? det.urls.slice(0, 5) : undefined,
+          detail:  det.detail,
           placeId: effectivePid,
           source:  'place_details',
         });

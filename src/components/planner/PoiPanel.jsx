@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { X, MapPin, ExternalLink, Star } from 'lucide-react';
-import { fetchLocationPhoto } from '../../utils/fetchLocationPhoto.js';
+import {
+  X, MapPin, ExternalLink, Star, Clock, Globe,
+} from 'lucide-react';
 import { CATEGORY_COLORS, googleMapsUrl } from '../../utils/kmlParser.js';
 
 const CATEGORY_LABEL = {
@@ -11,11 +12,66 @@ const CATEGORY_LABEL = {
   nailsLash: 'Nails & Lash',
 };
 
+// Friendly labels for Google Places "types" — only show the ones humans care
+// about. Wanderlog displays the same kind of tag chips below the write-up.
+const TYPE_LABEL = {
+  restaurant:           'Restaurant',
+  cafe:                 'Café',
+  bar:                  'Bar',
+  bakery:               'Bakery',
+  meal_takeaway:        'Takeaway',
+  food:                 'Food',
+  tourist_attraction:   'Tourist attraction',
+  point_of_interest:    null,
+  establishment:        null,
+  store:                'Shop',
+  shopping_mall:        'Shopping mall',
+  clothing_store:       'Clothing',
+  beauty_salon:         'Beauty salon',
+  hair_care:            'Hair salon',
+  spa:                  'Spa',
+  lodging:              'Stay',
+  park:                 'Park',
+  museum:               'Museum',
+  art_gallery:          'Art gallery',
+  place_of_worship:     'Place of worship',
+  buddhist_temple:      'Buddhist temple',
+  church:               'Church',
+  night_club:           'Nightlife',
+};
+
 function proxiedImageUrl(src) {
   if (!src) return null;
   if (src.startsWith('/')) return null;
   if (src.startsWith('/api/image-proxy')) return null;
   return `/api/image-proxy?url=${encodeURIComponent(src)}`;
+}
+
+// Module-level cache so reopening the same POI doesn't re-fetch
+const detailCache = new Map(); // key → { url, detail }
+
+async function fetchPlaceDetail({ placeId, name, lat, lng }) {
+  const cacheKey = placeId
+    ? `pid:${placeId}`
+    : name ? `nm:${name}:${lat ?? ''}:${lng ?? ''}` : null;
+  if (!cacheKey) return null;
+  if (detailCache.has(cacheKey)) return detailCache.get(cacheKey);
+
+  const params = new URLSearchParams();
+  if (placeId) params.set('placeId', placeId);
+  if (name)    params.set('name', name);
+  if (lat != null) params.set('lat', String(lat));
+  if (lng != null) params.set('lng', String(lng));
+
+  try {
+    const r = await fetch(`/api/place-photo?${params}`);
+    const d = await r.json();
+    const out = { url: d?.url ?? null, detail: d?.detail ?? null };
+    detailCache.set(cacheKey, out);
+    return out;
+  } catch {
+    return { url: null, detail: null };
+  }
 }
 
 /**
@@ -28,16 +84,32 @@ function proxiedImageUrl(src) {
  */
 export default function PoiPanel({ poi, onClose }) {
   const [photoUrl, setPhotoUrl] = useState(null);
+  const [detail,   setDetail]   = useState(null);
+  const [loading,  setLoading]  = useState(false);
   const [imgState, setImgState] = useState('direct'); // 'direct' | 'proxy' | 'failed'
+  const [hoursOpen, setHoursOpen] = useState(false);
 
   useEffect(() => {
     setPhotoUrl(null);
+    setDetail(null);
     setImgState('direct');
+    setHoursOpen(false);
     if (!poi) return;
     let cancelled = false;
-    fetchLocationPhoto(poi.name, poi.lat, poi.lng, poi.placeId || null)
-      .then((url) => { if (!cancelled) setPhotoUrl(url || null); })
-      .catch(() => { if (!cancelled) setPhotoUrl(null); });
+    setLoading(true);
+    fetchPlaceDetail({
+      placeId: poi.placeId || null,
+      name: poi.name,
+      lat: poi.lat,
+      lng: poi.lng,
+    }).then((d) => {
+      if (cancelled) return;
+      setPhotoUrl(d?.url || null);
+      setDetail(d?.detail || null);
+      setLoading(false);
+    }).catch(() => {
+      if (!cancelled) setLoading(false);
+    });
     return () => { cancelled = true; };
   }, [poi?.name, poi?.lat, poi?.lng, poi?.placeId]);
 
@@ -51,16 +123,27 @@ export default function PoiPanel({ poi, onClose }) {
   : imgState === 'proxy' && proxied ? proxied
   : photoUrl;
 
+  // Write-up paragraph — Google's editorial_summary takes priority over the
+  // locally-curated description.
+  const writeUp = detail?.summary || poi.description || null;
+  const address = detail?.address || poi.address || null;
+
+  // Tag chips — friendly type labels from Google + our internal category
+  const typeChips = (detail?.types || [])
+    .map((t) => TYPE_LABEL[t])
+    .filter((label, i, arr) => label && arr.indexOf(label) === i)
+    .slice(0, 4);
+
   return (
     <div
       role="dialog"
       aria-label={`Details for ${poi.name}`}
       className="
         pointer-events-auto absolute inset-x-0 bottom-0 z-[600]
-        max-h-[55%] overflow-y-auto rounded-t-2xl border-t border-ink/10
+        max-h-[65%] overflow-y-auto rounded-t-2xl border-t border-ink/10
         bg-white shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.25)]
         animate-[slideUp_180ms_ease-out_both]
-        lg:bottom-3 lg:left-3 lg:right-3 lg:max-h-[60%] lg:rounded-2xl lg:border lg:shadow-2xl
+        lg:bottom-3 lg:left-3 lg:right-3 lg:max-h-[70%] lg:rounded-2xl lg:border lg:shadow-2xl
       "
     >
       {/* Tab strip + close */}
@@ -89,8 +172,8 @@ export default function PoiPanel({ poi, onClose }) {
         </button>
       </div>
 
-      <div className="flex flex-col gap-3 p-3 sm:flex-row sm:p-4">
-        {/* Photo */}
+      <div className="flex flex-col gap-3 p-3 sm:flex-row-reverse sm:items-start sm:gap-4 sm:p-4">
+        {/* Photo — on desktop sits on the right like Wanderlog */}
         <div className="relative h-40 w-full shrink-0 overflow-hidden rounded-xl bg-ink/5 sm:h-32 sm:w-44">
           {renderSrc ? (
             <img
@@ -118,52 +201,116 @@ export default function PoiPanel({ poi, onClose }) {
           )}
         </div>
 
-        {/* Text */}
+        {/* Text content */}
         <div className="min-w-0 flex-1">
-          <h3 className="font-display text-lg font-semibold leading-tight text-ink sm:text-xl">
-            {poi.name}
+          <h3 className="flex items-center gap-1.5 font-display text-lg font-semibold leading-tight text-ink sm:text-xl">
+            <MapPin className="h-4 w-4 shrink-0 text-terracotta" />
+            <span className="truncate">{poi.name}</span>
           </h3>
 
-          <div className="mt-1 flex flex-wrap items-center gap-1.5">
-            {category && (
-              <span
-                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold text-white"
-                style={{ background: accent }}
-              >
-                {CATEGORY_LABEL[category] || category}
-              </span>
-            )}
-            {poi.time && (
-              <span className="rounded-full bg-ink/5 px-2 py-0.5 text-[11px] font-medium text-ink/65">
-                {poi.time}
-              </span>
-            )}
-            {poi.folderName && !category && (
-              <span className="rounded-full bg-ink/5 px-2 py-0.5 text-[11px] font-medium text-ink/65">
-                {poi.folderName}
-              </span>
-            )}
-          </div>
-
-          {poi.description && (
-            <p className="mt-2 text-[13px] leading-snug text-ink/70">
-              {poi.description}
+          {/* Write-up — the Wanderlog-style paragraph */}
+          {loading && !writeUp ? (
+            <p className="mt-2 animate-pulse text-[13px] text-ink/40">
+              Loading place description…
             </p>
+          ) : writeUp ? (
+            <p className="mt-2 text-[13px] leading-relaxed text-ink/75">
+              {writeUp}
+            </p>
+          ) : null}
+
+          {/* Tag chips — category + Google types */}
+          {(category || typeChips.length > 0 || poi.time) && (
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              {category && (
+                <span
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold text-white"
+                  style={{ background: accent }}
+                >
+                  {CATEGORY_LABEL[category] || category}
+                </span>
+              )}
+              {typeChips.map((label) => (
+                <span
+                  key={label}
+                  className="rounded-full bg-ink/5 px-2 py-0.5 text-[11px] font-medium text-ink/65"
+                >
+                  {label}
+                </span>
+              ))}
+              {poi.time && (
+                <span className="rounded-full bg-terracotta/10 px-2 py-0.5 text-[11px] font-semibold text-terracotta">
+                  {poi.time}
+                </span>
+              )}
+            </div>
           )}
 
-          {(poi.address || (poi.lat != null && poi.lng != null)) && (
-            <p className="mt-2 inline-flex items-start gap-1 text-[12px] text-ink/55">
+          {/* Rating + price level */}
+          {(detail?.rating || detail?.priceLevel) && (
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-[12px]">
+              {detail?.rating && (
+                <span className="inline-flex items-center gap-1 font-semibold text-ink">
+                  <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                  {detail.rating.toFixed(1)}
+                  {detail.ratingCount && (
+                    <span className="font-normal text-ink/45">
+                      ({detail.ratingCount.toLocaleString()})
+                    </span>
+                  )}
+                </span>
+              )}
+              {detail?.priceLevel != null && (
+                <span className="text-ink/55">
+                  {'$'.repeat(Math.max(1, detail.priceLevel))}
+                  <span className="text-ink/25">{'$'.repeat(4 - Math.max(1, detail.priceLevel))}</span>
+                </span>
+              )}
+              {detail?.openNow != null && (
+                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                  detail.openNow ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'
+                }`}>
+                  {detail.openNow ? 'Open now' : 'Closed'}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Address */}
+          {(address || (poi.lat != null && poi.lng != null)) && (
+            <p className="mt-2 flex items-start gap-1 text-[12px] text-ink/55">
               <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink/40" />
-              <span className="truncate">
-                {poi.address || `${poi.lat.toFixed(5)}, ${poi.lng.toFixed(5)}`}
+              <span className="min-w-0 break-words">
+                {address || `${poi.lat.toFixed(5)}, ${poi.lng.toFixed(5)}`}
               </span>
             </p>
           )}
 
-          {/* Action chips — Wanderlog uses the same "Open in" rail */}
+          {/* Hours — collapsible weekly schedule */}
+          {detail?.hours?.length > 0 && (
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={() => setHoursOpen((v) => !v)}
+                className="inline-flex items-center gap-1 text-[12px] font-semibold text-ink/65 hover:text-ink"
+              >
+                <Clock className="h-3.5 w-3.5" />
+                {hoursOpen ? 'Hide hours' : 'Show weekly hours'}
+              </button>
+              {hoursOpen && (
+                <ul className="mt-1 space-y-0.5 pl-5 text-[11px] text-ink/60">
+                  {detail.hours.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
+          {/* Action chips — Wanderlog "Open in" rail */}
           <div className="mt-3 flex flex-wrap gap-2">
             <ExternalChip
-              href={googleMapsUrl(poi.lat, poi.lng)}
+              href={detail?.googleUrl || googleMapsUrl(poi.lat, poi.lng)}
               label="Google Maps"
               tint="#34A853"
             />
@@ -178,6 +325,14 @@ export default function PoiPanel({ poi, onClose }) {
               tint="#00AA6C"
               icon={Star}
             />
+            {detail?.website && (
+              <ExternalChip
+                href={detail.website}
+                label="Website"
+                tint="#6b5c54"
+                icon={Globe}
+              />
+            )}
           </div>
         </div>
       </div>
