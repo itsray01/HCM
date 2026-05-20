@@ -4,10 +4,9 @@ import {
   useJsApiLoader,
   Marker,
   Polyline,
-  InfoWindow,
 } from '@react-google-maps/api';
 import { Route } from 'lucide-react';
-import { CATEGORY_COLORS, googleMapsUrl } from '../../utils/kmlParser.js';
+import { CATEGORY_COLORS } from '../../utils/kmlParser.js';
 import { locations, getLocationById } from '../../data/locations.js';
 
 const GOOGLE_KEY    = 'AIzaSyA6R9mIR9kUUWHzi1t9YURFipKS9G5h0tI';
@@ -39,14 +38,6 @@ const MAP_OPTIONS_BASE = {
   streetViewControl:    false,
   fullscreenControl:    true,
   clickableIcons:       false,
-};
-
-const CATEGORY_LABEL = {
-  clothes:   'Clothes',
-  cafeFood:  'Cafe / Food',
-  fun:       'For da funz',
-  airbnb:    'Airbnb',
-  nailsLash: 'Nails & Lash',
 };
 
 // ── Icon helpers (data-URL SVGs) ──────────────────────────────────────────────
@@ -129,7 +120,16 @@ function resolveDayStops(day) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function PlannerMap({ activeDay, focusedLocationId, categoryFilter = null, gestureHandling = 'cooperative' }) {
+export default function PlannerMap({
+  activeDay,
+  focusedLocationId,
+  categoryFilter = null,
+  // `greedy` = scroll only when cursor is over the map; no "Use Ctrl + scroll"
+  // overlay. Parent can still override (e.g. for mobile full-screen view).
+  gestureHandling = 'greedy',
+  onSelectPoi,
+  selectedPoiKey = null,
+}) {
   const { isLoaded } = useJsApiLoader({
     id:              'google-map-script',
     googleMapsApiKey: GOOGLE_KEY,
@@ -141,14 +141,12 @@ export default function PlannerMap({ activeDay, focusedLocationId, categoryFilte
     [dayStops],
   );
 
-  const [mapRef,       setMapRef]      = useState(null);
-  const [routePath,    setRoutePath]   = useState(null);
-  const [activeMarker, setActiveMarker] = useState(null);
+  const [mapRef,    setMapRef]    = useState(null);
+  const [routePath, setRoutePath] = useState(null);
 
   // Fetch road-following route from OSRM (free, no billing needed)
   useEffect(() => {
     setRoutePath(null);
-    setActiveMarker(null);
     if (dayStops.length < 2) return;
     let cancelled = false;
     fetchOsrmRoute(dayStops).then((path) => {
@@ -201,6 +199,38 @@ export default function PlannerMap({ activeDay, focusedLocationId, categoryFilte
     );
   }
 
+  // Forward a click on a marker (background pin or active-day numbered stop) to
+  // the parent as a structured POI payload. The PoiPanel consumes this shape.
+  function selectBackgroundPoi(loc) {
+    onSelectPoi?.({
+      key: `loc:${loc.id}`,
+      name: loc.name,
+      lat: loc.lat,
+      lng: loc.lng,
+      category: loc.category,
+      description: loc.description || null,
+      placeId: loc.placeId || null,
+      folderName: loc.folderName || null,
+    });
+  }
+
+  function selectStopPoi({ seq, lat, lng, locId, name, stop }) {
+    const loc = locId ? getLocationById(locId) : null;
+    onSelectPoi?.({
+      key: `stop:${activeDay?.day}:${seq}`,
+      seq,
+      name,
+      lat,
+      lng,
+      category: loc?.category || (stop.type === 'airbnb' ? 'airbnb' : null),
+      description: loc?.description || stop.notes || null,
+      placeId: loc?.placeId || stop.placeId || null,
+      folderName: loc?.folderName || null,
+      stopType: stop.type || null,
+      time: stop.time || null,
+    });
+  }
+
   return (
     <div className="relative h-full w-full overflow-hidden rounded-2xl border border-ink/10 shadow-sm">
       <GoogleMap
@@ -209,22 +239,28 @@ export default function PlannerMap({ activeDay, focusedLocationId, categoryFilte
         zoom={DEFAULT_ZOOM}
         options={{ ...MAP_OPTIONS_BASE, gestureHandling }}
         onLoad={onMapLoad}
-        onClick={() => setActiveMarker(null)}
+        onClick={() => onSelectPoi?.(null)}
       >
         {/* ── Background pins ─────────────────────────────────────────────── */}
         {locations.map((loc) => {
           if (activeDayLocIds.has(loc.id)) return null;
           const matchesFilter = !categoryFilter || loc.category === categoryFilter || loc.category === 'airbnb';
           if (!matchesFilter) return null;
-          const isAirbnb = loc.category === 'airbnb';
-          const tdUrl     = tearDropUrl(isAirbnb ? '#FF5252' : '#1F2937', isAirbnb ? 0.85 : 0.55);
+          const isAirbnb  = loc.category === 'airbnb';
+          const isActive  = selectedPoiKey === `loc:${loc.id}`;
+          const tdUrl     = tearDropUrl(
+            isAirbnb ? '#FF5252' : '#1F2937',
+            isActive ? 1 : (isAirbnb ? 0.85 : 0.55),
+          );
+          const dim       = isActive ? 20 : 14;
+          const h         = isActive ? 28 : 20;
           return (
             <Marker
               key={loc.id}
               position={{ lat: loc.lat, lng: loc.lng }}
-              icon={makeGIcon(tdUrl, 14, 20, 7, 20)}
-              zIndex={1}
-              onClick={() => setActiveMarker({ type: 'bg', loc })}
+              icon={makeGIcon(tdUrl, dim, h, dim / 2, h)}
+              zIndex={isActive ? 90 : 1}
+              onClick={() => selectBackgroundPoi(loc)}
             />
           );
         })}
@@ -244,89 +280,22 @@ export default function PlannerMap({ activeDay, focusedLocationId, categoryFilte
         )}
 
         {/* ── Numbered markers (active day) ────────────────────────────────── */}
-        {dayStops.map(({ seq, lat, lng, locId, name, color, stop }) => {
+        {dayStops.map((entry) => {
+          const { seq, lat, lng, locId, name, color, stop } = entry;
           const isAirbnb = stop.type === 'airbnb';
-          const size      = isAirbnb ? 34 : 30;
-          const iconUrl   = numIconUrl(seq, color, size);
+          const isActive = selectedPoiKey === `stop:${activeDay?.day}:${seq}`;
+          const size     = (isAirbnb ? 34 : 30) + (isActive ? 6 : 0);
+          const iconUrl  = numIconUrl(seq, color, size);
           return (
             <Marker
               key={`stop-${seq}`}
               position={{ lat, lng }}
               icon={makeGIcon(iconUrl, size, size, size / 2, size / 2)}
-              zIndex={100 + seq}
-              onClick={() => setActiveMarker({ type: 'stop', seq, lat, lng, name, color, stop })}
+              zIndex={(isActive ? 500 : 100) + seq}
+              onClick={() => selectStopPoi(entry)}
             />
           );
         })}
-
-        {/* ── Info windows ─────────────────────────────────────────────────── */}
-        {activeMarker?.type === 'stop' && (
-          <InfoWindow
-            position={{ lat: activeMarker.lat, lng: activeMarker.lng }}
-            onCloseClick={() => setActiveMarker(null)}
-            options={{ pixelOffset: new window.google.maps.Size(0, -18) }}
-          >
-            <div style={{ minWidth: 180, padding: '4px 0', fontFamily: 'system-ui, sans-serif' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  width: 20, height: 20, borderRadius: '50%', background: activeMarker.color,
-                  fontSize: 11, fontWeight: 800, color: 'white', flexShrink: 0,
-                }}>
-                  {activeMarker.seq}
-                </span>
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#1a1a1a' }}>
-                  {activeMarker.name}
-                </span>
-              </div>
-              {activeMarker.stop.time && (
-                <div style={{ marginTop: 4, fontSize: 12, color: '#888' }}>
-                  {activeMarker.stop.time}
-                </div>
-              )}
-              <a
-                href={googleMapsUrl(activeMarker.lat, activeMarker.lng)}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  gap: 6, padding: '7px 12px', borderRadius: 8, border: '1px solid #e0d8d0',
-                  background: '#faf8f5', fontSize: 12, fontWeight: 600, color: '#2d2d2d',
-                  textDecoration: 'none',
-                }}
-              >
-                Open in Google Maps ↗
-              </a>
-            </div>
-          </InfoWindow>
-        )}
-
-        {activeMarker?.type === 'bg' && (
-          <InfoWindow
-            position={{ lat: activeMarker.loc.lat, lng: activeMarker.loc.lng }}
-            onCloseClick={() => setActiveMarker(null)}
-          >
-            <div style={{ minWidth: 160, padding: '4px 0', fontFamily: 'system-ui, sans-serif' }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#1a1a1a' }}>{activeMarker.loc.name}</div>
-              <div style={{ marginTop: 2, fontSize: 12, color: '#888' }}>
-                {CATEGORY_LABEL[activeMarker.loc.category] || activeMarker.loc.folderName}
-              </div>
-              <a
-                href={googleMapsUrl(activeMarker.loc.lat, activeMarker.loc.lng)}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  gap: 6, padding: '7px 12px', borderRadius: 8, border: '1px solid #e0d8d0',
-                  background: '#faf8f5', fontSize: 12, fontWeight: 600, color: '#2d2d2d',
-                  textDecoration: 'none',
-                }}
-              >
-                Open in Google Maps ↗
-              </a>
-            </div>
-          </InfoWindow>
-        )}
       </GoogleMap>
 
       {/* Day badge */}

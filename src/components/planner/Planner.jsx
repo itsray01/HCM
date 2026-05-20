@@ -34,6 +34,7 @@ import {
 } from './plannerIds.js';
 import PlannerCard from './PlannerCard.jsx';
 import PlannerMap from './PlannerMap.jsx';
+import PoiPanel from './PoiPanel.jsx';
 import BudgetSummary from './BudgetSummary.jsx';
 import { DayEditDrawer } from './PlannerDrawers.jsx';
 import AddPlaceBar from './AddPlaceBar.jsx';
@@ -73,6 +74,7 @@ export default function Planner() {
   const [activeDragItem, setActiveDragItem] = useState(null);
   const [mobileView, setMobileView] = useState('list'); // 'list' | 'map'
   const [activeFilter, setActiveFilter] = useState(null); // { kind: 'category'|'day', id } | null
+  const [selectedPoi, setSelectedPoi] = useState(null);   // POI detail panel
 
   const plannerMapAnchorRef = useRef(null);
 
@@ -304,6 +306,10 @@ export default function Planner() {
     if (filter?.kind === 'day') setActiveDayIdx(filter.id);
   }
 
+  // Clear POI panel whenever the active day changes — its numbered marker for
+  // that POI may no longer exist, so the panel reference would dangle.
+  useEffect(() => { setSelectedPoi(null); }, [activeDayIdx, activeGroup]);
+
   const categoryOverride =
     activeFilter?.kind === 'category' ? activeFilter.id : null;
 
@@ -498,18 +504,20 @@ export default function Planner() {
             >
               <div className="lg:sticky lg:top-20">
                 <div
-                  className={
+                  className={`relative ${
                     mobileView === 'map'
                       ? 'h-[calc(100dvh-10.5rem)] min-h-[280px] w-full max-lg:-mx-3 max-lg:rounded-none max-lg:border-x-0 lg:h-[calc(100vh-7rem)] lg:min-h-[360px]'
                       : 'h-[70vh] min-h-[360px] lg:h-[calc(100vh-7rem)]'
-                  }
+                  }`}
                 >
                   <PlannerMap
                     activeDay={activeDay}
                     focusedLocationId={focusedLocationId}
                     categoryFilter={categoryOverride}
-                    gestureHandling={mobileView === 'map' ? 'greedy' : 'cooperative'}
+                    onSelectPoi={setSelectedPoi}
+                    selectedPoiKey={selectedPoi?.key || null}
                   />
+                  <PoiPanel poi={selectedPoi} onClose={() => setSelectedPoi(null)} />
                 </div>
 
                 {/* Day picker beneath map — hidden on mobile in List view; always on lg+ */}
