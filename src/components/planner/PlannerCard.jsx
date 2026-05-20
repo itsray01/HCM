@@ -627,10 +627,52 @@ function NumberedPin({ accent, number, icon: Icon }) {
 // ─── Photo thumbnail ─────────────────────────────────────────────────────────
 // Click photo → lightbox. Hover → pencil icon to correct a wrong URL.
 
+// Some image hosts (TripAdvisor, bstatic, etc.) 403 on cross-site Referer.
+// When `<img>` fails to load, swap to `/api/image-proxy?url=…` which refetches
+// with a clean UA + same-origin Referer. Returns null for URLs that are
+// already same-origin (no proxy needed) or already proxied.
+function proxiedImageUrl(src) {
+  if (!src) return null;
+  if (src.startsWith('/')) return null;                       // local asset
+  if (src.startsWith('/api/image-proxy')) return null;        // already proxied
+  return `/api/image-proxy?url=${encodeURIComponent(src)}`;
+}
+
+// Reusable image component with the direct→proxy→hide fallback chain.
+function LightboxImage({ src, alt }) {
+  const [state, setState] = useState('direct');
+  const lastSrc = useRef(src);
+  if (lastSrc.current !== src) {
+    lastSrc.current = src;
+    if (state !== 'direct') setState('direct');
+  }
+  const proxied = proxiedImageUrl(src);
+  const renderSrc = state === 'proxy' && proxied ? proxied : src;
+  if (state === 'failed') return null;
+  return (
+    <img
+      src={renderSrc}
+      alt={alt}
+      className="block max-h-[78vh] w-auto max-w-[92vw] object-contain"
+      onError={() => {
+        if (state === 'direct' && proxied) setState('proxy');
+        else setState('failed');
+      }}
+    />
+  );
+}
+
 function PhotoThumb({ photoUrl, loading, label, accent, icon: Icon, onOpen, onCorrect }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const inputRef = useRef(null);
+  // Track per-URL: 'direct' | 'proxy' | 'failed'. Reset whenever the URL changes.
+  const [imgState, setImgState] = useState('direct');
+  const lastUrlRef = useRef(photoUrl);
+  if (lastUrlRef.current !== photoUrl) {
+    lastUrlRef.current = photoUrl;
+    if (imgState !== 'direct') setImgState('direct');
+  }
 
   function openEdit(e) {
     e.stopPropagation();
@@ -684,6 +726,10 @@ function PhotoThumb({ photoUrl, loading, label, accent, icon: Icon, onOpen, onCo
   }
 
   if (photoUrl) {
+    const proxied = proxiedImageUrl(photoUrl);
+    const renderSrc =
+      imgState === 'proxy' && proxied ? proxied : photoUrl;
+    const showImg = imgState !== 'failed';
     return (
       <div className="group/photo relative shrink-0">
         <button
@@ -693,13 +739,19 @@ function PhotoThumb({ photoUrl, loading, label, accent, icon: Icon, onOpen, onCo
           className="block h-14 w-14 overflow-hidden rounded-xl border border-ink/10 bg-cream/40 transition hover:ring-2 hover:ring-terracotta/50"
           aria-label={`View photo of ${label}`}
         >
-          <img
-            src={photoUrl}
-            alt={label}
-            loading="lazy"
-            className="h-full w-full object-cover"
-            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-          />
+          {showImg && (
+            <img
+              src={renderSrc}
+              alt={label}
+              loading="lazy"
+              className="h-full w-full object-cover"
+              onError={() => {
+                // Direct load failed → try the proxy. Proxy failed too → give up.
+                if (imgState === 'direct' && proxied) setImgState('proxy');
+                else setImgState('failed');
+              }}
+            />
+          )}
         </button>
         {/* Pencil correction icon — always visible on touch, hover-only on desktop */}
         <button
@@ -883,11 +935,7 @@ function PhotoLightbox({ firstSrc, label, placeId, name, lat, lng, onClose }) {
         className="relative flex max-h-[78vh] w-auto max-w-[92vw] items-center justify-center overflow-hidden rounded-2xl shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <img
-          src={current}
-          alt={label}
-          className="block max-h-[78vh] w-auto max-w-[92vw] object-contain"
-        />
+        <LightboxImage src={current} alt={label} />
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/65 to-transparent px-5 pb-3 pt-10">
           <div className="flex items-baseline justify-between gap-3">
             <p className="font-display text-base font-semibold text-white">{label}</p>
