@@ -42,6 +42,7 @@ export const PLACE_IDS = {
   "Pizza 4P's Hai Ba Trung": "ChIJC-nWiTYvdTERGMJvRSoZ2f4",
   "Oasis Cafe": "ChIJbaeNZCspdTEREadFbltGF9s",
   "Bánh Canh Cua 14 ️": "ChIJl5Hp8RwvdTERzEOyi5tG-Bo",
+  "Bánh Canh Cua 14": "ChIJl5Hp8RwvdTERzEOyi5tG-Bo",
   "Mặn Mòi, Tao Đàn - Homey Authentic Vietnamese Cuisine": "ChIJbZ2640UvdTERwM8WWGyOESs",
   "Phở Miến gà Kỳ Đồng": "ChIJW3XUti4vdTEROwTSqtSbq1I",
   "The 350F Dessert & More": "ChIJ1eEwkYApdTERH5sDAJvEMcU",
@@ -98,6 +99,8 @@ export const PLACE_IDS = {
   "Little HaNoi Egg Coffee (Yersin)": "ChIJqZ7MThYvdTERh6VZ5ryLuDk",
   "Rose Spa Quận 10": "ChIJiwVgtU8vdTERFx0emtJjq9A",
   "Spa Nhà Suga Premium Korea Headspa": "ChIJ-QaJA98pdTERraMTO4DUJ-w",
+  "Chaos Hair Atelier HCM": "ChIJGw67UAAvdTERKAZzKKfNs2o",
+  "Tao Đàn Park": "ChIJsXOVajkvdTERcBdP0Xow8j4",
 
   // Nails & Lash
   "Siêu thị NAIL LA MOS": "ChIJtR-nOAApdTERU9Kj-FqA7QY",
